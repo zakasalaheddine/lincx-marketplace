@@ -84,13 +84,17 @@ The platform relies on `adId` for per-ad tracking, A/B testing, and DOM targetin
 
 ---
 
-### A6. Renaming canonical fields or inventing field names silently
+### A6. Using a field the CAG doesn't define, or renaming a CAG field
 
-The Mustache context is fixed by the ad feed. A typo means empty output in production. (Example in the existing library: `listical_headline` vs `listicle_headline` — one template has the typo and renders empty for every ad.)
+Every template is bound to its own `creativeAssetGroup` (CAG). The CAG is the **only** source of truth for which fields exist on this template — field names vary per CAG. A field name from a different template (or from an example under `patterns/`) does NOT imply the same field exists here. Inventing or renaming produces empty output in production.
 
-❌ **Don't:** Guess at field names. Don't abbreviate (`cta` instead of `cta_text`). Don't pluralize/depluralize.
+❌ **Don't:**
+- Guess at field names.
+- Copy a field name from a different template's CAG (including the examples).
+- Abbreviate (`cta` instead of `cta_text`). Don't pluralize / depluralize.
+- "Correct" a legacy typo in the CAG (e.g. `listical_headline`) — if the CAG uses it, use it verbatim.
 
-✅ **Do:** Use the exact names from the canonical catalog (see `CHECKLIST.md` §6). If a new field is truly needed, flag it to the user before using it.
+✅ **Do:** Load the CAG for the template you're working on via `mcp__claude_ai_Lincx__get_creative_asset_group(id=…)`; use exactly the field names it returns, and nothing else. If the brief needs a field that isn't in the CAG, stop and coordinate a CAG update before writing the template. See `CHECKLIST.md` §6.
 
 ---
 

@@ -2,6 +2,8 @@
 
 Canonical, copy-paste-ready patterns extracted from the existing Lincx ad template library. Each pattern is stable across templates and SHOULD be reused verbatim when the matching use case appears.
 
+> **Field names in the snippets below are illustrative.** They reflect what commonly appears across the library, but **every template has its own CAG** — the actual field names for the template you're working on come from `mcp__claude_ai_Lincx__get_creative_asset_group(id=…)`, not from these snippets. The **structure, class names, Mustache forms (`{{ }}` vs `{{{ }}}` vs `{{# }}`), data attributes, and JS helpers** are what you should copy verbatim. The **field names** — `href`, `cta_text`, `offer_headline`, etc. — swap for whatever the CAG defines. See `CHECKLIST.md` §6.
+
 Organized by user intent:
 - "Build a listicle" → §1, §2, §3, §11, §12, §14
 - "Build a sticky offer bar" → §4, §8

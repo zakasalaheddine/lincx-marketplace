@@ -7,7 +7,7 @@ A deterministic checklist an AI (or human) must follow when generating a new Lin
 ## 0. Before writing anything
 
 - [ ] Confirm the **template type** (one of): `listicle`, `sticky-offer-bar`, `product-card`, `ads-box`, `best-overall-product`, `featured-vs-all`, `simple-cta`, or hybrid. If unclear, ask the user.
-- [ ] Confirm the **ad fields** in use. Map them to the canonical Mustache variables (see §6). Do **not** invent new field names — propose additions explicitly.
+- [ ] **Load the CAG (`creativeAssetGroup`) for this template** via `mcp__claude_ai_Lincx__get_creative_asset_group(id=…)` and cache the schema. The CAG fields are the **only** fields available — use them verbatim, use nothing else. Field names vary per template; do **not** copy field names from other templates or from the examples under `patterns/`. See §6.
 - [ ] Confirm the **client/network** (e.g. Affiliati, Centerfield, Refinance.com) so the visual language matches.
 - [ ] Confirm **media type**: image-only, video-only, or both (affects lazy-load JS).
 - [ ] Confirm whether the template needs a **footer with legal disclaimer** (listicles: yes; sticky bars/cards: usually no).
@@ -51,10 +51,11 @@ Every template MUST have this shape:
 
 ## 3. Mustache variable conventions
 
-- [ ] Use `{{{ triple-brace }}}` for fields that may contain HTML: `offer_headline`, `offer_text`, `cta_text`, `listicle_headline`, `cta_subtext`, `offer_disclaimer`, `promo`.
-- [ ] Use `{{ double-brace }}` for URLs, IDs, alt text, and plain data: `href`, `src`, `image`, `adId`, `author_name`, `src_author`, `rating_score`, `rating_stars`.
-- [ ] For array iteration use `{{#cta_list}}...{{/cta_list}}` with `{{.}}` for current value and `{{_index}}` for position.
-- [ ] **Never rename existing fields.** `listicle_headline` (not `listical_headline` — that is a known typo in one legacy template; do not propagate).
+- [ ] Use `{{{ triple-brace }}}` for any field the CAG marks as HTML-bearing (typical examples: `offer_headline`, `offer_text`, `cta_text`, `listicle_headline`, `cta_subtext`, `offer_disclaimer`, `promo` — but verify against the CAG for *your* template).
+- [ ] Use `{{ double-brace }}` for URLs, IDs, alt text, and plain data (typical examples: `href`, `src`, `image`, `adId`, `author_name`, `src_author`, `rating_score`, `rating_stars`).
+- [ ] For array-typed fields, use `{{#field_name}}…{{/field_name}}` with `{{.}}` for the current value and `{{_index}}` for position.
+- [ ] **Never rename fields from the CAG.** Whatever name the CAG uses, use exactly that in the template. If the CAG has a legacy typo (e.g. the `listical_headline` typo in one older CAG), keep the typo for that template — do NOT "correct" it. Do NOT propagate a legacy typo into a different CAG's template either.
+- [ ] **Never use a field the CAG doesn't expose.** If the brief needs a field that isn't in the CAG, stop and coordinate a CAG update first.
 
 ---
 
@@ -88,35 +89,46 @@ This is Lincx's way of hiding empty Mustache fields at render time.
 
 ---
 
-## 6. Canonical field catalog
+## 6. Template fields come from the CAG — not from any universal catalog
 
-Fields referenced across existing templates. Use these names verbatim:
+**There is no universal field catalog.** Every template is bound to its own `creativeAssetGroup` (CAG), and the CAG defines which fields exist for *that* template. Two templates of the same visual type (e.g. two listicles) routinely have different field names, different field types, and different optional/required distinctions. There is no "standard listicle schema."
 
-| Field | Type | Use |
+Consequences:
+
+- [ ] Before writing or editing, call `mcp__claude_ai_Lincx__get_creative_asset_group(id=…)` for this template's CAG and use **only** the fields it returns.
+- [ ] Do **not** guess field names from prior templates, from the `patterns/example-*` directory, or from the illustrative list below. A field that exists in one template does NOT imply it exists in another.
+- [ ] If the brief mentions data the CAG doesn't expose, stop and coordinate a CAG update before writing the template. Don't invent fields.
+- [ ] Preserve whatever casing and spelling the CAG uses — including historical typos (e.g. `listical_headline` in one legacy CAG). Never "correct" a field name locally.
+
+### Common fields seen across the existing library (illustrative only)
+
+Use this list to get a sense of the *kinds* of fields that appear and their *typical* types / purposes. It is **not** a contract for any specific template — always check that template's CAG.
+
+| Field (as commonly named) | Typical type | Typical use |
 |---|---|---|
-| `adId` | string | Required, root `id` |
-| `href` | URL | Main click-through |
-| `offer_headline` | HTML | Main ad headline |
+| `adId` | string | Per-ad root `id` |
+| `href` | URL | Primary click-through |
+| `offer_headline` | HTML | Headline copy |
 | `offer_text` | HTML | Body copy |
 | `cta_text` | HTML | Button label |
 | `cta_ref_text` | HTML | Small text under CTA |
 | `cta_subtext` | HTML | Footer-ish small text |
-| `cta_list` | array of `"Label\|URL"` or `"Label\|URL\|color"` | Multi-CTA |
+| `cta_list` | array of pipe-delimited strings or plain strings | Multi-CTA |
 | `offer_disclaimer` | HTML | Legal disclaimer |
-| `listicle_headline` | HTML | Section/card heading |
+| `listicle_headline` | HTML | Section / card heading |
 | `author_name` | string | Byline |
 | `src_author` | URL | Author avatar |
 | `src` | URL | Main image |
 | `videoSrc` | URL | Main video |
-| `image` / `imageURL` | URL | Alt image field |
+| `image` / `imageURL` | URL | Main image (alternate names, per CAG) |
 | `bullet_points_text` | array of strings | Feature bullets |
-| `groupOffer` | string | Ordering key: `'high'` or `'default'` |
-| `promo` | HTML | Promo/discount text |
+| `groupOffer` | string | Ordering key (typical values: `'high'`, `'default'`) |
+| `promo` | HTML | Promo / discount text |
 | `rating_score` | number (0–10) | Rating number |
 | `rating_stars` | number (0–5) | Star count |
 | `banner` | boolean | Banner variant flag |
 
-Need a new field? Document it with a comment and flag it to the user before using.
+Any of these may be **absent**, **renamed**, or have **different types** in the CAG you're working against. Always verify.
 
 ---
 
@@ -222,7 +234,9 @@ function handleCtaListSplits() {
 
 ## 13. Final review before handing off
 
-- [ ] All `{{...}}` placeholders actually appear somewhere in the template.
+- [ ] **Every `{{...}}` token in the template is a field the CAG actually defines.** No phantom fields. No fields copied from a different template's CAG.
+- [ ] Every field the template uses matches the CAG's spelling and casing exactly.
+- [ ] All `{{...}}` placeholders actually appear somewhere in the template (no dead variables).
 - [ ] No `{{...}}` leaks inside `<script>` bodies — Mustache renders server-side, JS sees the output.
 - [ ] Every CTA has `data-lincx-cta` + `target="_blank"` + `href`.
 - [ ] `data-content=""` pairs with a CSS rule that hides empty fields.
