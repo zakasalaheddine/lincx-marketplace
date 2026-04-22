@@ -1,0 +1,8 @@
+{
+  "id": "cag_test",
+  "fields": [
+    { "name": "headline", "type": "string" },
+    { "name": "body", "type": "string" },
+    { "name": "clickUrl", "type": "url" }
+  ]
+}

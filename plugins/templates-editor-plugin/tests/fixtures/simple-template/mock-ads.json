@@ -1,0 +1,4 @@
+[
+  { "headline": "First headline", "body": "First body.", "clickUrl": "https://example.com/a" },
+  { "headline": "Second headline", "body": "Second body.", "clickUrl": "https://example.com/b" }
+]
