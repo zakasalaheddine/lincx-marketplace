@@ -1,0 +1,7 @@
+{
+  "_comment": "Copy this file to rendering.json to override the default convention. The renderer does not currently read this file — wiring is planned when a non-default convention is needed.",
+  "open": "{{",
+  "close": "}}",
+  "escapeByDefault": true,
+  "unescapePrefix": "&"
+}
