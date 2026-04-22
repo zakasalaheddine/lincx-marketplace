@@ -2,13 +2,29 @@
 
 Deferred items from the initial build.
 
-## Populate references (blocks non-trivial authoring)
+## Populate references (partially complete)
 
 The skill refuses to author non-trivial templates until at least one pattern exists.
 
-- [ ] Drop at least one real example into `plugins/templates-editor-plugin/references/patterns/<name>/` with `example.html`, `example.css`, `notes.md`.
-- [ ] Fill in `plugins/templates-editor-plugin/references/rendering-convention.md` from real production templates (token syntax, required fields, any helpers).
-- [ ] Add any known gotchas to `plugins/templates-editor-plugin/references/anti-patterns.md`.
+- [x] Drop at least one real example into `plugins/templates-editor-plugin/references/patterns/<name>/`. `example-1` (listicle) is in place with `template.html`, `styles.css`, `notes.md`.
+- [x] Fill in `plugins/templates-editor-plugin/references/rendering-convention.md` with real convention (full Mustache, triple-brace, sections, data-attribute show/hide).
+- [x] Seed `plugins/templates-editor-plugin/references/anti-patterns.md` with initial entries (derived from example-1).
+- [ ] Add more patterns as variants/new formats emerge.
+
+## Renderer upgrade — full Mustache support
+
+The local preview renderer (`plugins/templates-editor-plugin/scripts/preview-render.mjs`) currently supports only `{{ var }}` and `{{& var }}` unescape. Real Lincx templates use:
+- `{{{ var }}}` triple-brace unescape
+- `{{#section}}…{{/section}}` sections (iteration over arrays)
+- `{{.}}` current-item in array sections
+- `{{^section}}…{{/section}}` inverted sections (rare in our templates)
+
+With the current renderer, preview of a real template renders CSS/layout correctly but leaves triple-brace tokens and section tags as literal text. Impact is documented in `rendering-convention.md` and `references/anti-patterns.md`.
+
+- [ ] Upgrade `scripts/preview-render.mjs` to parse full Mustache — simplest path is to inline a small Mustache implementation (the full spec isn't large; stdlib-only is preferable over adding a dependency).
+- [ ] Extend `tests/preview-render.test.mjs` with fixtures covering triple-brace, `{{#ads}}` iteration, `{{.}}` current-item, and `{{^}}` inverted sections.
+- [ ] Update `tests/fixtures/simple-template/` or add a new fixture that uses full Mustache so the fixture-equality test covers the upgraded behavior.
+- [ ] Once done, remove the "renderer support status" caveat from `references/rendering-convention.md` and the "Using the local preview to verify copy correctness" anti-pattern entry.
 
 ## Task 15 — manual smoke test with live Lincx MCP
 
