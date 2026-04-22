@@ -1,0 +1,15 @@
+{
+  "name": "lincx-marketplace",
+  "description": "Claude Code plugins for Lincx use-cases",
+  "owner": {
+    "name": "Lincx",
+    "url": "https://lincx.com"
+  },
+  "plugins": [
+    {
+      "name": "templates-editor-plugin",
+      "source": "./plugins/templates-editor-plugin",
+      "description": "Build and adjust Lincx ad templates (HTML+CSS) with a live preview loop"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "templates-editor-plugin",
+  "description": "Build and adjust Lincx ad templates (HTML+CSS) with a live preview loop and a save-seam that paste-ships today and MCP-writes when a write tool lands.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Lincx"
+  }
+}
