@@ -1,37 +1,24 @@
 # templates-editor-plugin
 
-Build and adjust Lincx ad templates (HTML + CSS) from Claude Code with a live preview loop.
+Part of the [**lincx-marketplace**](../../README.md). See the marketplace README for install, usage, and development instructions — everything a user or contributor needs lives there.
 
-## What's inside
+## What this plugin is
 
-- Skill `editing-lincx-templates` — orchestrator that consults references, pulls via the Lincx MCP, applies edits, and runs the save flow.
-- Slash commands: `/lincx-template-new`, `/lincx-template-edit`, `/lincx-template-save`, `/lincx-template-load-ads`, `/lincx-template-preview-toggle`, `/lincx-template-refresh-schema`.
-- PostToolUse hook that auto-renders `preview.html` after any edit to a tracked template file.
-- Local renderer (`scripts/preview-render.mjs`) that wires CAG-shaped mock ads into the HTML.
-- Save seam (`scripts/save-seam.mjs`) that paste-ships today (versioned local artifact) and MCP-writes when a write tool lands.
-- References library at `references/` — **populate `patterns/` and `rendering-convention.md` from your own template corpus.**
+Build and adjust Lincx ad templates (HTML + Mustache + CSS) from Claude Code with a live preview loop. Pulls via the Lincx MCP, renders a local preview after every edit, and produces a versioned save artifact (will push via MCP once the Lincx write tool ships).
 
-## Requirements
+## Commands, flow, and workflow
 
-- Node (stdlib only — no `npm install`).
-- `lincx-mcp` connected to your Claude session for the MCP-backed reads.
+All covered in the [marketplace README](../../README.md#using-templates-editor-plugin).
 
-## Start a session
+## Reference library
 
-```
-/lincx-template-edit <templateId>   # adjust an existing template
-/lincx-template-new <name>          # build from scratch
-```
+The LLM's authoring behavior is shaped by `references/`:
+- `CHECKLIST.md` — production checklist
+- `patterns.md` — copy-paste pattern snippets
+- `anti-patterns.md` — severity-ordered don'ts
+- `patterns/example-1/` … `patterns/example-8/` — real production templates with brief notes
 
-The session lives in `./.lincx-session.json` in whatever directory you run Claude in.
-
-## Save
-
-```
-/lincx-template-save
-```
-
-Today: writes a versioned single-file artifact at `<htmlDir>/versions/vN.html` (CSS inlined) for you to paste into Lincx. Tomorrow: calls the MCP write tool automatically once it ships — no config change needed.
+Read `references/README.md` for the intended read order and the example-picker table.
 
 ## Tests
 
@@ -40,8 +27,4 @@ cd plugins/templates-editor-plugin
 npm test
 ```
 
-Runs node unit tests, the shell hook fixture, and the structural lint.
-
-## Populating references
-
-The plugin ships with stub references. Before authoring non-trivial templates, drop your real examples under `references/patterns/<name>/{example.html,example.css,notes.md}` and describe your tokenization convention in `references/rendering-convention.md`.
+Runs unit tests (`node:test`), the hook shell-fixture, and the structural lint. No `npm install` needed — everything uses stdlib.
