@@ -7,3 +7,9 @@
 node_modules/
 .DS_Store
 *.log
+
+# negate parent/global .claude* ignores — our plugin manifests live under .claude-plugin/
+!.claude-plugin/
+!.claude-plugin/**
+!plugins/*/.claude-plugin/
+!plugins/*/.claude-plugin/**
