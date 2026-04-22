@@ -1,0 +1,9 @@
+# session state produced in user projects — never appears in this repo, but defensive
+.lincx-session.json
+.lincx-session.preview.pending
+.lincx-session.log
+
+# node / editor
+node_modules/
+.DS_Store
+*.log
