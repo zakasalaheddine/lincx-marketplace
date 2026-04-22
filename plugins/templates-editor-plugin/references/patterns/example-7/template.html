@@ -1,0 +1,375 @@
+<div class="lincx-wrapper">
+  <div class="lincx-container">
+    {{#ads}}
+    <div class="listicle" data-heading="{{ listicle_headline }}" data-group="{{ groupOffer }}" id="{{ adId }}">
+      <h2 class="heading" data-content="{{ listicle_headline }}">{{{ listicle_headline }}}</h2>
+      <h3 class="subheading" data-content="{{offer_headline}}">
+        <a
+          href="{{href}}"
+          target="_blank"
+          data-lincx-cta
+          data-lincx-cta-name="headline"
+          data-lincx-cta-position="headline"
+          style="text-decoration: none; color: #000000"
+        >
+          {{{offer_headline}}}
+        </a>
+      </h3>
+      <div class="listicle__info" data-content="{{ author_name }}">
+        <img loading="lazy" src="{{ src_author }}" alt="{{ src_author }}" class="listicle__author--image" />
+        <span class="listicle__author--name">{{ author_name }}</span>
+        <span class="listicle__published--date"></span>
+        <span class="listicle__category"><strong>Trending</strong></span>
+      </div>
+
+      <div class="listicle__thumbnail lazy-load" data-content="{{ src }}">
+        <a
+          href="{{href}}"
+          target="_blank"
+          class="image_link"
+          data-lincx-cta
+          data-lincx-cta-name="image"
+          data-lincx-cta-position="image"
+          data-content="{{ cta_text }}"
+        >
+          <img data-src="{{src}}" alt="listicle image" onerror="this.onerror=null; this.remove();" />
+        </a>
+        <img data-src="{{src}}" alt="listicle image" data-show="{{ cta_text }}" />
+      </div>
+      <div class="listicle__thumbnail lazy-load" data-content="{{ videoSrc }}">
+        <a
+          href="{{href}}"
+          target="_blank"
+          data-lincx-cta
+          data-lincx-cta-name="video"
+          data-lincx-cta-position="video"
+          data-content="{{ cta_text }}"
+        >
+          <video
+            class="video-thumbnail"
+            muted
+            playsinline
+            loop
+            preload="metadata"
+            width="100%"
+            height="100%"
+            data-src="{{ videoSrc }}"
+          >
+            <source data-src="{{ videoSrc }}" type="video/mp4" />
+            <source data-src="{{ videoSrc }}" type="video/webm" />
+            Your browser does not support the video tag.
+          </video>
+          <button class="video-play-button" style="display: none">Play Video</button>
+        </a>
+        <video
+          class="video-thumbnail"
+          muted
+          playsinline
+          loop
+          preload="metadata"
+          width="100%"
+          height="100%"
+          data-show="{{ cta_text }}"
+          data-src="{{ videoSrc }}"
+        >
+          <source data-src="{{ videoSrc }}" type="video/mp4" />
+          <source data-src="{{ videoSrc }}" type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+        <button class="video-play-button" style="display: none">Play Video</button>
+      </div>
+      <div class="listicle__content">{{{ offer_text }}}</div>
+      <br />
+      <div class="listicle__list__cta" data-content="{{#cta_list}}{{.}}{{/cta_list}}">
+        {{#cta_list}}
+        <a
+          href="{{.}}"
+          class="cta__link"
+          target="_blank"
+          data-lincx-cta
+          data-disclaimer="{{ offer_disclaimer }}"
+          data-lincx-cta-name="cta position {{ _index }}"
+          data-lincx-cta-position="cta_list"
+          data-element="{{.}}"
+        >
+          {{.}}
+        </a>
+        {{/cta_list}}
+      </div>
+      <div class="listicle__cta" data-content="{{ cta_text }}">
+        <a
+          href="{{href}}"
+          class="cta__link"
+          target="_blank"
+          data-disclaimer="{{ offer_disclaimer }}"
+          data-lincx-cta-name="main"
+          data-lincx-cta-position="cta_link"
+          data-lincx-cta
+        >
+          {{ cta_text }}
+        </a>
+      </div>
+      <div class="cta__disclaimer" data-content="{{ offer_disclaimer }}">{{{ offer_disclaimer }}}</div>
+    </div>
+    {{/ads}}
+  </div>
+
+  <script>
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      // DOM is ready
+      console.log('DOM is ready!')
+      setupLazyLoad()
+    } else {
+      document.addEventListener('DOMContentLoaded', function () {
+        setupLazyLoad()
+      })
+    }
+
+    function setupLazyLoad() {
+      const lazyElements = document.querySelectorAll('.listicle__thumbnail.lazy-load')
+      lazyElements.forEach((element) => {
+        const lazyLoad = (entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const parentElement = entry.target
+
+              // Find all media elements (video and img)
+              const videoEl = parentElement.querySelector('video')
+              const imgEls = parentElement.querySelectorAll('img')
+
+              // If there is a video, check its data-src extension
+              if (videoEl) {
+                const dataSrc = videoEl.dataset.src || ''
+                const ext = dataSrc.split('.').pop().toLowerCase()
+                if (ext === 'gif' || ext === 'webp') {
+                  // Replace video with image for gif/webp
+                  const img = document.createElement('img')
+                  img.src = dataSrc
+                  img.alt = videoEl.alt || 'listicle image'
+                  // Copy all data attributes from video to img
+                  Array.from(videoEl.attributes).forEach((attr) => {
+                    if (attr.name.startsWith('data-')) {
+                      img.setAttribute(attr.name, attr.value)
+                    }
+                  })
+                  videoEl.replaceWith(img)
+                } else {
+                  // Normal video lazy load
+                  if (!videoEl.src) {
+                    videoEl.src = dataSrc
+                    videoEl.autoplay = true
+                    videoEl.loop = true
+                    videoEl.muted = true
+                    videoEl.play()
+                  }
+                }
+              } else {
+                // Handle images
+                imgEls.forEach((img) => {
+                  if (!img.src) {
+                    const dataSrc = img.dataset.src || ''
+                    const ext = dataSrc.split('.').pop().toLowerCase()
+                    // Always set src for images, regardless of extension
+                    img.src = dataSrc
+                  }
+                })
+              }
+
+              observer.unobserve(parentElement)
+            }
+          })
+        }
+        const observer = new IntersectionObserver(lazyLoad, { threshold: 0.3 })
+        observer.observe(element)
+      })
+    }
+
+    function initVideoPlayback() {
+      const videos = document.querySelectorAll('.video-thumbnail')
+
+      videos.forEach((video) => {
+        // Function to ensure video keeps playing
+        function ensurePlaying() {
+          if (video.paused) {
+            video.play().catch((error) => {
+              // console.log("Autoplay prevented. Retrying...");
+              // setTimeout(ensurePlaying, 1000); // Retry after 1 second
+            })
+          }
+        }
+
+        // Attempt to start playing immediately
+        ensurePlaying()
+
+        // Ensure video restarts if it ever stops
+        video.addEventListener('pause', ensurePlaying)
+
+        // If video ends (shouldn't happen with loop, but just in case), restart it
+        video.addEventListener('ended', () => {
+          video.currentTime = 0
+          ensurePlaying()
+        })
+
+        // Attempt to restart video periodically (helpful for some mobile browsers)
+        // setInterval(ensurePlaying, 5000);
+      })
+    }
+
+    function handleCtaListSplits() {
+      const ctaList = document.querySelectorAll('.listicle__list__cta a')
+      ctaList.forEach((cta, index) => {
+        const content = cta.dataset.element
+        const ctaSplit = content.split('|')
+        cta.href = ctaSplit[1]
+        cta.textContent = ctaSplit[0]
+      })
+
+      const listicle = document.querySelectorAll('.listicle')
+      listicle.forEach((card) => {
+        const ctaList = card.querySelectorAll('.listicle__list__cta a')
+        ctaList.forEach((cta, index) => {
+          cta.dataset.lincxCtaName = `cta position ${index + 1}`
+        })
+      })
+    }
+
+    function addNumberToHeadlines() {
+      const headlines = document.querySelectorAll('.subheading[data-content]:not([data-content=""])')
+      const count = headlines.length
+      headlines.forEach((headline, index) => {
+        headline.innerHTML = `<span class="number">${count - index}.</span> ${headline.innerHTML}`
+      })
+    }
+    ;(() => {
+      function renderCurrentDate(selector) {
+        const date = new Date()
+        date.setDate(date.getDate() - 4)
+        const options = { year: 'numeric', month: 'long', day: '2-digit' }
+        const formattedDate = date.toLocaleDateString('en-US', options)
+
+        const element = document.querySelector(selector)
+        if (element) {
+          element.textContent = formattedDate
+        } else {
+          console.error(`Selector "${selector}" not found.`)
+        }
+      }
+
+      function renderDynamicMonth() {
+        const month = new Date().toLocaleString('en-US', { month: 'long' })
+        document.querySelectorAll('.dynamic_month').forEach((el) => {
+          el.textContent = month
+        })
+      }
+
+      function initGroupOffer() {
+        const groupKeys = ['high']
+        const listicles = document.querySelectorAll('.listicle')
+        const container = document.querySelector('.lincx-container')
+
+        // Get all listicles except the first one
+        const listiclesArray = Array.from(listicles).slice(1)
+
+        // Group listicles by their group value
+        const groupedListicles = listiclesArray.reduce((acc, listicle) => {
+          const group = listicle.dataset.group || 'default'
+          if (!acc[group]) {
+            acc[group] = []
+          }
+          acc[group].push(listicle)
+          return acc
+        }, {})
+
+        // Reorder listicles based on groupKeys priority
+        const orderedGroups = groupKeys.concat(Object.keys(groupedListicles).filter((key) => !groupKeys.includes(key)))
+
+        // Remove all listicles except first one
+        listiclesArray.forEach((listicle) => listicle.remove())
+
+        // Re-append listicles in new order
+        orderedGroups.forEach((group) => {
+          if (groupedListicles[group]) {
+            groupedListicles[group].forEach((listicle) => {
+              container.appendChild(listicle)
+            })
+          }
+        })
+
+        let rank = 0
+        document.querySelectorAll('.listicle').forEach((listicle) => {
+          listicle.setAttribute('data-rank', rank)
+          rank++
+        })
+
+        renderCurrentDate('.listicle__published--date')
+        renderDynamicMonth()
+        handleCtaListSplits()
+        //initializeThumbnails()
+        initVideoPlayback()
+      }
+
+      initGroupOffer()
+
+      addNumberToHeadlines()
+    })()
+  </script>
+
+  <script>
+    function addShareThisScript() {
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      script.src =
+        'https://platform-api.sharethis.com/js/sharethis.js#property=675528a93e41a900135ff134&product=inline-share-buttons'
+      script.async = true
+      document.head.appendChild(script)
+    }
+
+    // Usage
+    addShareThisScript()
+    var yearElement = document.getElementById('year')
+    if (yearElement) {
+      yearElement.textContent = new Date().getFullYear()
+    }
+    var locationElement = document.getElementById('location')
+    if (locationElement) {
+      locationElement.textContent = window.location.hostname
+    }
+  </script>
+  <footer class="footer">
+    <p>
+      ADVERTISING DISCLOSURE: This website and the products and services referred to on it are advertising marketplaces.
+      This website is an advertisement and not a news publication. Any photographs of persons used on this site are
+      models. The owner of this site and the products and services referred to on it only provides a service where
+      consumers can obtain and compare.
+      <br />
+      <br />
+      HEALTH DISCLAIMER: This website is not intended to provide medical advice or replace medical advice and treatment
+      from your physician. Visitors are advised to consult their own doctors or other qualified health professionals
+      regarding the treatment of medical conditions. The author shall not be held liable or responsible for any
+      misunderstanding or misuse of the information contained on this site or for any loss, damage, or injury caused, or
+      alleged to be caused, directly or indirectly by any treatment, action, or application of any food or food source
+      discussed in this website. The U.S. Food and Drug Administration has not evaluated the statements on this website.
+      The information is not intended to diagnose, treat, cure, or prevent any disease.
+      <br />
+      <br />
+      Trademarks utilized on our website belong to their respective owners, and no implied or expressed endorsement of
+      our website or services is intended. Through in-depth research and experienced editors, we provide feedback about
+      products and services. We are independently owned, and the opinions expressed here are our own. Ratings are
+      determined by our subjective opinion and based on a methodology that considers our analysis of brand reputation,
+      product offerings, customer success and conversion rates, compensation paid to us, and general consumer interest.
+      Please be advised that this site accepts compensation from brands that appear on the site, and such compensation
+      impacts the numerical rankings, star ratings, and/or higher positions in which the companies (and/or their
+      products) are listed. This site cannot and does not present information about every site or offer available.
+      Except as expressly outlined in our Terms of Use, all representations and warranties regarding the information
+      presented on this page are disclaimed. The information on this site is subject to change at any time.
+      <br />
+      <br />
+      For detailed scientific references and studies, please visit the official product websites by following the
+      corresponding links.
+      <br />
+      <br />
+      © 2025 http://seniorkickbacks.online | Privacy Policy | Terms of Use | Disclosure | Contact Us
+    </p>
+    <p>©2019-2025 Senior Kickbacks Online. All Rights Reserved.</p>
+  </footer>
+</div>

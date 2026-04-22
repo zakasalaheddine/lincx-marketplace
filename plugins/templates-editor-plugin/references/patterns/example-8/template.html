@@ -1,0 +1,47 @@
+<div>
+  {{#ads}}
+  <div class="container" id="{{ adId }}">
+    <h1>{{offer_headline}}</h1>
+
+    <div class="text__content">{{{offer_text}}}</div>
+
+    <div class="actions">
+      {{#cta_list}}
+      <a
+        class="btn"
+        href="{{href}}"
+        target="_blank"
+        data-lincx-cta
+        data-lincx-cta-name="cta_list"
+        data-lincx-cta-position="cta_list {{ _index }}"
+        data-element="{{.}}"
+      >
+        {{.}}
+      </a>
+      {{/cta_list}}
+    </div>
+
+    <p class="footer-text">{{{cta_subtext}}}</p>
+  </div>
+  {{/ads}}
+  <script>
+    function handleCtaListSplits() {
+      const ctaList = document.querySelectorAll('.actions .btn');
+      ctaList.forEach(function (cta, index) {
+        cta.dataset.lincxCtaName = `cta_list ${index + 1}`;
+        const splittedCTA = cta.dataset.element.split('|');
+        cta.href = splittedCTA[1];
+        cta.innerHTML = splittedCTA[0];
+        // If the splitted content specifies a color (e.g. "Label|https://example.com|#ff0000")
+        if (splittedCTA.length > 2 && splittedCTA[2]) {
+          cta.style.color = splittedCTA[2].trim();
+        } else {
+          // Set default color via CSS variable if not provided
+          cta.style.color = '';
+        }
+      });
+    }
+
+    handleCtaListSplits();
+  </script>
+</div>

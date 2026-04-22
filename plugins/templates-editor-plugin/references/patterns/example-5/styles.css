@@ -1,0 +1,249 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  color: #1e2125;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.lincx-sticky-offer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 999;
+  background: #fff;
+  box-shadow: 0 -1px 1px #f0f0f0;
+  padding: 0.5rem 0;
+}
+
+.lincx-sticky-offer-wrapper {
+  position: relative;
+}
+
+.lincx-sticky-offer-bar-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  padding: 0;
+  transition: background 0.2s ease;
+  text-transform: none;
+}
+@media screen and (min-width: 768px) {
+  .lincx-sticky-offer-bar-close {
+    display: none;
+  }
+}
+
+.lincx-container {
+  width: 100%;
+  padding: 0 15px;
+  margin: 0 auto;
+}
+@media (min-width: 576px) {
+  .lincx-container {
+    max-width: 540px;
+  }
+}
+@media (min-width: 768px) {
+  .lincx-container {
+    max-width: 720px;
+  }
+}
+@media (min-width: 992px) {
+  .lincx-container {
+    max-width: 960px;
+  }
+}
+
+.lincx-row {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 -15px;
+}
+
+.lincx-image-col {
+  text-align: center;
+  flex: 0 0 100%;
+  max-width: 100%;
+  position: relative;
+  width: 100%;
+  padding: 0 15px;
+}
+@media (min-width: 768px) {
+  .lincx-image-col {
+    text-align: left;
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+.lincx-image-col img {
+  max-width: 100%;
+  vertical-align: middle;
+  border-style: none;
+  width: 120px;
+  height: auto;
+}
+
+.lincx-promo-col {
+  text-align: center;
+  position: relative;
+  width: 100%;
+  padding: 0 15px;
+}
+@media (min-width: 768px) {
+  .lincx-promo-col {
+    text-align: left;
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+}
+
+.lincx-promo-text {
+  font-family: 'Poppins', sans-serif;
+}
+
+.lincx-cta-col {
+  flex: 0 0 100%;
+  max-width: 100%;
+  position: relative;
+  width: 100%;
+  padding: 0 15px;
+}
+@media (min-width: 768px) {
+  .lincx-cta-col {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+.lincx-cta-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+@media (min-width: 992px) {
+  .lincx-cta-wrapper {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+}
+
+.lincx-rating-box {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: #46b2aa;
+  border-radius: 6px;
+  padding: 8px 12px;
+  min-width: 140px;
+}
+@media (min-width: 992px) {
+  .lincx-rating-box {
+    margin-right: 0.5rem;
+    display: flex;
+  }
+}
+
+.lincx-rating-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  font-family: 'Inter', 'Poppins', sans-serif;
+}
+
+.lincx-rating-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.lincx-rating-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  font-family: 'Inter', 'Poppins', sans-serif;
+}
+
+.lincx-rating-stars {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.lincx-rating-stars .star {
+  width: 12px;
+  height: 12px;
+  filter: brightness(0) invert(1);
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.lincx-rating-stars .star.full {
+  filter: brightness(0) invert(1);
+}
+
+.lincx-rating-stars .star.half {
+  filter: brightness(0) invert(1);
+  background: linear-gradient(to right, rgba(255, 255, 255, 1) 50%, rgba(255, 255, 255, 0.3) 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.lincx-rating-stars .star.empty {
+  filter: brightness(0) invert(1);
+  opacity: 0.3;
+}
+
+.lincx-offer-bar-btn {
+  background: #34997d;
+  border-radius: 7px;
+  padding: 10px 20px;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.lincx-offer-bar-btn:hover {
+  text-decoration: underline;
+}
+
+.lincx-offer-bar-btn svg {
+  margin-left: 1rem;
+}

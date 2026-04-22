@@ -1,26 +1,42 @@
-# Rendering convention
+# Rendering convention (prose reference)
 
-Lincx templates use **full Mustache syntax** at runtime. This is the authoritative reference. If a pattern under `patterns/` deviates, the pattern's `notes.md` must flag it.
+`CHECKLIST.md` §3 and §5 give the terse rules. This doc is the fuller explanation — read when you need the *why*, or when you hit an edge case.
 
-## Token forms
+## Mustache, full spec
 
-| Form | Meaning | When to use |
-|---|---|---|
-| `{{ field }}` | HTML-escaped value | Plain text, attribute values, anything that must not inject HTML |
-| `{{{ field }}}` | Unescaped value | Fields that contain pre-authored HTML (e.g. `listical_headline`, `offer_headline`, `offer_text`) |
-| `{{#section}}…{{/section}}` | Section / iteration | Repeat the enclosed block once per item in the array (e.g. `{{#ads}}…{{/ads}}`) |
-| `{{.}}` | Current item | Inside an array section where items are scalars (e.g. `{{#cta_list}}{{.}}{{/cta_list}}`) |
-| `{{^section}}…{{/section}}` | Inverted section | Render when `section` is falsy/empty — rare in our templates; prefer the data-attribute CSS trick below |
+Lincx renders templates server-side with Mustache. Every form is in play:
 
-Whitespace inside `{{ … }}` is allowed and ignored — `{{ field }}` and `{{field}}` mean the same thing.
+| Form | Meaning |
+|---|---|
+| `{{ field }}` | Value, HTML-escaped. |
+| `{{{ field }}}` | Value, raw (no escaping). Use when the field is pre-authored HTML. |
+| `{{#section}}…{{/section}}` | Iteration section. Repeats the block once per array item. |
+| `{{.}}` | Current item inside an array section when items are scalars. |
+| `{{_index}}` | Zero-based position inside an array section. |
+| `{{^section}}…{{/section}}` | Inverted section — renders only when `section` is empty/falsy. Rare; prefer the `data-content` CSS trick for show/hide. |
+
+Whitespace inside `{{ … }}` is ignored — `{{ field }}` and `{{field}}` are equivalent. We typically write the spaced form for readability.
+
+## Escaped vs raw — when to use which
+
+**Escaped (`{{ field }}`):**
+- URLs: `href="{{ href }}"` — prevents breaking out of the attribute.
+- IDs and selectors: `id="{{ adId }}"`.
+- Alt text, plain strings.
+- Any value coming from a non-trusted source.
+
+**Raw (`{{{ field }}}`):**
+- Fields authored as HTML upstream, where the authoring workflow produces `<strong>`, `<em>`, `<a>`, `<br>` etc. The standard set: `offer_headline`, `offer_text`, `cta_text`, `listicle_headline`, `cta_subtext`, `offer_disclaimer`, `promo`.
+
+When in doubt, use escaped. Rendered `&lt;strong&gt;` in the preview is an unambiguous signal to switch to raw.
 
 ## Show/hide is done in CSS, not Mustache
 
-Our templates prefer **data-attribute-driven** conditional rendering over Mustache sections for visibility:
+We use data-attribute conditionals rather than Mustache sections for visibility. The canonical snippet:
 
 ```html
 <div class="thumbnail" data-content="{{ src }}">
-  <img src="{{ src }}" />
+  <img data-src="{{ src }}" alt="..." />
 </div>
 ```
 
@@ -29,29 +45,33 @@ Our templates prefer **data-attribute-driven** conditional rendering over Mustac
 [data-show]:not([data-show='']) { display: none; }
 ```
 
-When `src` is empty, Mustache renders `data-content=""` and CSS hides the block. The JS-side event handlers don't need to know about the conditional. This is preferred over `{{#src}}…{{/src}}` because:
-- HTML structure stays consistent, so scripts (lazy-load observers, etc.) can bind selectors reliably.
-- Fallback elements can be toggled with the inverse `data-show` pattern.
+When `src` is empty, Mustache expands to `data-content=""` and CSS hides the block. Why not a Mustache `{{#src}}…{{/src}}` section?
 
-Use Mustache sections (`{{#…}}…{{/…}}`) for **iteration over lists**, not for show/hide.
+- **HTML structure stays constant.** Script selectors that bind to `.thumbnail` always find the same nodes across ads — lazy-load observers, click handlers, measurement code aren't thrown off by optional branches.
+- **Fallback UI is trivial.** Add an element with `data-show="{{ src }}"` to render *only* when `src` is empty. Useful for placeholder images, default headlines.
+- **One rule covers every optional field.** The CSS is universal; add `data-content` to any element and it participates.
 
-## Fields that are always expected (typical CAG contract)
+Use Mustache sections (`{{#…}}`) for **iteration over lists**. Don't use them for show/hide.
 
-Patterns will vary, but across our current templates the ad-level fields you'll see include:
-- `adId`, `groupOffer`
-- `listical_headline`, `offer_headline`, `offer_text` (all HTML, triple-brace)
-- `author_name`, `src_author`
-- `src`, `videoSrc`, `href`
-- `cta_text`, `cta_list`
+## Fields that don't exist
 
-The exact contract is defined per template by the `creativeAssetGroup` it's bound to. Check the CAG schema via `get_creative_asset_group(id=…)`.
+When Mustache encounters `{{ missing_field }}`, it renders an empty string. Combined with the `data-content` trick, this is the safety net — optional fields disappear without error. Don't add `{{^missing_field}}` guards; they're redundant.
 
-## Helpers / partials
+## Partials and lambdas
 
-We do not use Mustache partials (`{{> partial }}`) or lambdas in templates. Every template is self-contained.
+We don't use Mustache partials (`{{> partial }}`) or lambda sections. Every template is self-contained.
 
-## Renderer support status (important)
+## Typos and legacy field names
 
-The local preview renderer (`scripts/preview-render.mjs`) currently supports **only** `{{ var }}` with HTML escape and a custom `{{& var }}` unescape marker — it does NOT handle triple-brace `{{{ var }}}` or sections `{{# }}…{{/ }}`. For templates that use full Mustache (that's all our real templates), preview is **degraded**: escaped fields render fine, triple-brace tokens and sections render as literal text.
+The canonical field catalog is in `CHECKLIST.md` §6. Use those names verbatim. One known legacy: `listical_headline` is a typo preserved in a single older template (see `example-1`). Do **not** propagate it to new work — use `listicle_headline`.
 
-Until the renderer is upgraded to full Mustache (tracked in `todo.md`), previewing real templates shows correct CSS/layout but incorrect content iteration and HTML-inside-fields. For layout work this is fine. For copy work, verify against the live Lincx render.
+## Renderer support status (local preview)
+
+The local preview renderer (`scripts/preview-render.mjs`) handles only `{{ var }}` with HTML escape and a custom `{{& var }}` unescape marker. It does NOT parse triple-brace `{{{ var }}}`, sections `{{# }}…{{/ }}`, `{{.}}`, or `{{_index}}`.
+
+Practical impact when previewing a real template locally:
+- Escaped fields substitute correctly → CSS/layout previews are accurate.
+- Triple-brace tokens and section tags render as literal text.
+- Iteration doesn't happen — you see one "ad frame" with `{{#ads}}…{{/ads}}` markers visible.
+
+Use the local preview for **CSS, layout, responsive behaviour, selector correctness**. Verify **content, iteration, and HTML-bearing fields** against a live Lincx render. The renderer upgrade to full Mustache is tracked in `/todo.md`.

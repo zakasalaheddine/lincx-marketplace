@@ -1,0 +1,267 @@
+<div class="product-listing-wrapper">
+  {{#ads}}
+  <div class="product-card" id="{{ adId }}" data-is-banner="{{banner}}">
+    <!-- Top Choice Banner (hidden by default, shown via JavaScript) -->
+    <div class="badge-banner"></div>
+
+    <div class="card-header">
+      <div class="rank-image">
+        <div class="rank-number"></div>
+        <a
+          href="{{href}}"
+          data-lincx-cta
+          target="_blank"
+          data-lincx-cta-name="image"
+          data-lincx-cta-position="image"
+          class="product-image"
+          data-content="{{ image }}"
+        >
+          <img src="{{ image }}" alt="{{ offer_headline }}" />
+        </a>
+      </div>
+      <div class="stats-section" data-stats-score="{{ rating_score }}" data-content="{{rating_score}}">
+        <div class="stats-score">{{ rating_score }}</div>
+        <div class="stats-label">EXCELLENT</div>
+        <div class="stats-rating">{{ rating_stars }}</div>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="card-content">
+        <a
+          href="{{href}}"
+          data-lincx-cta
+          target="_blank"
+          data-lincx-cta-name="heading"
+          data-lincx-cta-position="heading"
+          data-content="{{ offer_headline }}"
+          class="headline-link"
+        >
+          <h3 class="offer-headline" data-content="{{ offer_headline }}">{{{ offer_headline }}}</h3>
+        </a>
+
+        <div class="promo-pricing-section">
+          <div class="promo-tag" data-content="{{ promo }}">{{ promo }}</div>
+          <div class="pricing" data-content="{{ price }}">
+            <span class="pricing-label">Pricing starts at</span>
+            <span class="pricing-amount">{{ price }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-services" data-content="{{#bullet_points_text}}{{.}}{{/bullet_points_text}}">
+        <ul class="features-list">
+          {{#bullet_points_text}}
+          <li>
+            ✅
+            <span>{{{.}}}</span>
+          </li>
+          {{/bullet_points_text}}
+        </ul>
+        <p>{{{ offer_text }}}</p>
+      </div>
+    </div>
+
+    <div class="card-ctas">
+      <a
+        href="{{ href }}"
+        class="btn-read-review"
+        data-lincx-cta
+        target="_blank"
+        data-lincx-cta-name="read-review"
+        data-lincx-cta-position="read-review"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z"
+            fill="#2563EB"
+          />
+        </svg>
+        <span data-default-value="Read Review">{{{cta_ref_text}}}</span>
+      </a>
+      <a
+        href="{{ href }}"
+        class="btn-visit-site"
+        data-lincx-cta
+        target="_blank"
+        data-lincx-cta-name="visit-site"
+        data-lincx-cta-position="visit-site"
+      >
+        <span data-default-value="Visit Site">{{{cta_text}}}</span>
+      </a>
+    </div>
+    <a
+      href="{{ href }}"
+      data-lincx-cta
+      data-lincx-cta-name="banner"
+      data-lincx-cta-position="banner"
+      class="btn-banner"
+      target="_blank"
+    ></a>
+  </div>
+  {{/ads}}
+
+  <script>
+    function initializeProducts() {
+      const badges = [
+        `<div class="badge-banner top-choice">
+      <span class="banner-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="17" viewBox="0 0 19 17" fill="none">
+          <g clip-path="url(#clip0_1_50)">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M6.43689 15.8307V14.7299C6.43689 14.6958 6.46184 14.6683 6.49404 14.6683H9.00144V10.8606H8.94407C8.42091 10.8606 7.94378 10.6501 7.51337 10.3465C7.08636 10.0449 6.70743 9.65165 6.3768 9.28011L6.36387 9.26554L6.34528 9.26171C5.45452 9.09829 4.59982 8.8142 3.81655 8.38675C3.09316 7.99155 2.43166 7.47259 1.86338 6.81314C1.23567 6.08416 0.781453 5.24981 0.479167 4.35573C0.152844 3.39307 0.00204091 2.35897 0.000453509 1.31269C0.000453509 1.16288 0.0575997 1.02765 0.151029 0.929206C0.243552 0.831244 0.372811 0.770555 0.514997 0.770555H3.76077L3.75918 0.709866L3.7585 0.707955C3.7551 0.601153 3.75374 0.492917 3.75283 0.384203C3.75215 0.276444 3.75215 0.170836 3.75442 0.0649895V0.060211C3.75442 0.0265216 3.77959 0 3.81179 0H15.1889C15.2202 0 15.2454 0.0255658 15.2463 0.0582995C15.2488 0.166058 15.2488 0.274772 15.2481 0.382052C15.2474 0.490766 15.2454 0.598525 15.2426 0.705088L15.2406 0.768166H18.3691H18.3707C18.3764 0.768166 18.3814 0.768166 18.3861 0.770555H18.4857C18.6272 0.770555 18.7562 0.831244 18.849 0.929206C18.9419 1.02765 19 1.16384 19 1.31269C18.9977 2.35802 18.8472 3.39068 18.522 4.3531L18.5213 4.35597C18.2185 5.25005 17.765 6.0844 17.1371 6.81338C16.5686 7.47283 15.9073 7.99179 15.1832 8.38699C14.4011 8.81444 13.5448 9.09876 12.6556 9.26195L12.6361 9.26578L12.6227 9.28035C12.2926 9.65189 11.9139 10.0452 11.4871 10.3467C11.0564 10.6504 10.5786 10.8609 10.0573 10.8609H9.99946V14.6685H12.5048C12.537 14.6685 12.564 14.6955 12.564 14.7297V15.8309H13.6119H13.6135C13.6455 15.8309 13.6707 15.8584 13.6707 15.8921V16.9379C13.6707 16.9716 13.6455 17 13.6135 17H5.38762H5.38626C5.35519 17 5.32889 16.9725 5.32889 16.9388V15.893C5.32889 15.8593 5.35519 15.8309 5.38626 15.8309L6.43689 15.8307ZM3.82154 7.13905C4.28325 7.44607 4.78623 7.68931 5.31438 7.87352L5.45157 7.92155L5.38263 7.78703C4.99055 7.01528 4.67307 6.10662 4.42453 5.1681C4.13381 4.06686 3.93765 2.92309 3.8288 1.90835L3.82313 1.85507H1.04587L1.0504 1.91958C1.10279 2.71713 1.2579 3.49749 1.53297 4.22479C1.789 4.90049 2.14933 5.53103 2.62646 6.08583C2.98136 6.49775 3.38319 6.84779 3.82154 7.13905ZM14.5762 5.16595C14.3299 6.10256 14.0135 7.00787 13.6171 7.78727L13.5487 7.92179L13.6856 7.87376C14.2149 7.68954 14.7174 7.44631 15.1794 7.13928C15.6175 6.84803 16.0191 6.49799 16.3738 6.08655C16.8513 5.53175 17.2108 4.90216 17.4677 4.22599C17.7423 3.49987 17.8977 2.71952 17.9503 1.92245L17.955 1.85793H15.1637L15.159 1.91217C15.0526 2.93432 14.8628 4.07068 14.5762 5.16595ZM9.39852 2.09567L8.57443 3.65614C8.56468 3.67525 8.54518 3.68696 8.52409 3.68696L6.86186 3.68648C6.82966 3.68648 6.80222 3.7001 6.7809 3.72136C6.75981 3.74287 6.74757 3.77321 6.74757 3.80666V3.81168C6.74757 3.82888 6.74757 3.83677 6.74825 3.8382V3.83963L6.75301 3.84895L6.75505 3.85134L6.76049 3.86353L6.7614 3.86448L7.59773 5.43379C7.6068 5.45147 7.60816 5.47441 7.59841 5.49304L6.76276 7.06426C6.74643 7.09269 6.74394 7.1259 6.7521 7.15529C6.75959 7.18564 6.77909 7.21264 6.80698 7.22864C6.81492 7.23414 6.82308 7.23749 6.83147 7.23987L6.83556 7.24083C6.84621 7.2437 6.85755 7.24465 6.8673 7.24465H6.86934L8.52046 7.24083H8.52205C8.54246 7.24083 8.56242 7.25206 8.57307 7.27165L9.40034 8.83355C9.41553 8.86294 9.44093 8.88253 9.46882 8.89089C9.4983 8.89973 9.52959 8.89591 9.55726 8.88062L9.55975 8.87823L9.56384 8.87536C9.5779 8.86796 9.58538 8.86413 9.58538 8.8627L9.59513 8.84645L9.60148 8.83331L10.4262 7.27285C10.4362 7.25373 10.455 7.24155 10.4764 7.24155L12.1384 7.2425C12.1703 7.2425 12.1989 7.22841 12.2191 7.20762C12.2406 7.18564 12.2533 7.15529 12.2533 7.12232V7.11682C12.2533 7.09962 12.2533 7.09126 12.2524 7.0903L12.2477 7.08003L12.2463 7.07764L12.2395 7.06545L12.2388 7.0645L11.4025 5.49519C11.3939 5.47704 11.3918 5.45458 11.4025 5.43546L12.2381 3.86472C12.2536 3.83629 12.2563 3.8026 12.2488 3.77321C12.2409 3.74287 12.222 3.71635 12.1942 3.69986C12.186 3.69484 12.1769 3.6915 12.169 3.68911L12.1656 3.68767C12.1538 3.68529 12.1434 3.68433 12.1336 3.68433H12.1311L10.4795 3.68767H10.478C10.4584 3.68767 10.4387 3.67644 10.4274 3.65685L9.60012 2.09543C9.58561 2.06604 9.55907 2.04597 9.53118 2.03761C9.50261 2.02925 9.47177 2.03259 9.44387 2.04788L9.44047 2.0498L9.43616 2.05314C9.42324 2.06103 9.41666 2.06485 9.41507 2.06533L9.406 2.08253L9.39965 2.09567H9.39852Z"
+              fill="currentColor"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_1_50">
+              <rect width="19" height="17" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
+      </span>
+      <span class="banner-text">Top Choice</span>
+    </div>`,
+        `
+    <div class="badge-banner most-popular">
+      <span class="banner-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="17" viewBox="0 0 19 17" fill="none">
+          <g clip-path="url(#clip0_1_50)">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M6.43689 15.8307V14.7299C6.43689 14.6958 6.46184 14.6683 6.49404 14.6683H9.00144V10.8606H8.94407C8.42091 10.8606 7.94378 10.6501 7.51337 10.3465C7.08636 10.0449 6.70743 9.65165 6.3768 9.28011L6.36387 9.26554L6.34528 9.26171C5.45452 9.09829 4.59982 8.8142 3.81655 8.38675C3.09316 7.99155 2.43166 7.47259 1.86338 6.81314C1.23567 6.08416 0.781453 5.24981 0.479167 4.35573C0.152844 3.39307 0.00204091 2.35897 0.000453509 1.31269C0.000453509 1.16288 0.0575997 1.02765 0.151029 0.929206C0.243552 0.831244 0.372811 0.770555 0.514997 0.770555H3.76077L3.75918 0.709866L3.7585 0.707955C3.7551 0.601153 3.75374 0.492917 3.75283 0.384203C3.75215 0.276444 3.75215 0.170836 3.75442 0.0649895V0.060211C3.75442 0.0265216 3.77959 0 3.81179 0H15.1889C15.2202 0 15.2454 0.0255658 15.2463 0.0582995C15.2488 0.166058 15.2488 0.274772 15.2481 0.382052C15.2474 0.490766 15.2454 0.598525 15.2426 0.705088L15.2406 0.768166H18.3691H18.3707C18.3764 0.768166 18.3814 0.768166 18.3861 0.770555H18.4857C18.6272 0.770555 18.7562 0.831244 18.849 0.929206C18.9419 1.02765 19 1.16384 19 1.31269C18.9977 2.35802 18.8472 3.39068 18.522 4.3531L18.5213 4.35597C18.2185 5.25005 17.765 6.0844 17.1371 6.81338C16.5686 7.47283 15.9073 7.99179 15.1832 8.38699C14.4011 8.81444 13.5448 9.09876 12.6556 9.26195L12.6361 9.26578L12.6227 9.28035C12.2926 9.65189 11.9139 10.0452 11.4871 10.3467C11.0564 10.6504 10.5786 10.8609 10.0573 10.8609H9.99946V14.6685H12.5048C12.537 14.6685 12.564 14.6955 12.564 14.7297V15.8309H13.6119H13.6135C13.6455 15.8309 13.6707 15.8584 13.6707 15.8921V16.9379C13.6707 16.9716 13.6455 17 13.6135 17H5.38762H5.38626C5.35519 17 5.32889 16.9725 5.32889 16.9388V15.893C5.32889 15.8593 5.35519 15.8309 5.38626 15.8309L6.43689 15.8307ZM3.82154 7.13905C4.28325 7.44607 4.78623 7.68931 5.31438 7.87352L5.45157 7.92155L5.38263 7.78703C4.99055 7.01528 4.67307 6.10662 4.42453 5.1681C4.13381 4.06686 3.93765 2.92309 3.8288 1.90835L3.82313 1.85507H1.04587L1.0504 1.91958C1.10279 2.71713 1.2579 3.49749 1.53297 4.22479C1.789 4.90049 2.14933 5.53103 2.62646 6.08583C2.98136 6.49775 3.38319 6.84779 3.82154 7.13905ZM14.5762 5.16595C14.3299 6.10256 14.0135 7.00787 13.6171 7.78727L13.5487 7.92179L13.6856 7.87376C14.2149 7.68954 14.7174 7.44631 15.1794 7.13928C15.6175 6.84803 16.0191 6.49799 16.3738 6.08655C16.8513 5.53175 17.2108 4.90216 17.4677 4.22599C17.7423 3.49987 17.8977 2.71952 17.9503 1.92245L17.955 1.85793H15.1637L15.159 1.91217C15.0526 2.93432 14.8628 4.07068 14.5762 5.16595ZM9.39852 2.09567L8.57443 3.65614C8.56468 3.67525 8.54518 3.68696 8.52409 3.68696L6.86186 3.68648C6.82966 3.68648 6.80222 3.7001 6.7809 3.72136C6.75981 3.74287 6.74757 3.77321 6.74757 3.80666V3.81168C6.74757 3.82888 6.74757 3.83677 6.74825 3.8382V3.83963L6.75301 3.84895L6.75505 3.85134L6.76049 3.86353L6.7614 3.86448L7.59773 5.43379C7.6068 5.45147 7.60816 5.47441 7.59841 5.49304L6.76276 7.06426C6.74643 7.09269 6.74394 7.1259 6.7521 7.15529C6.75959 7.18564 6.77909 7.21264 6.80698 7.22864C6.81492 7.23414 6.82308 7.23749 6.83147 7.23987L6.83556 7.24083C6.84621 7.2437 6.85755 7.24465 6.8673 7.24465H6.86934L8.52046 7.24083H8.52205C8.54246 7.24083 8.56242 7.25206 8.57307 7.27165L9.40034 8.83355C9.41553 8.86294 9.44093 8.88253 9.46882 8.89089C9.4983 8.89973 9.52959 8.89591 9.55726 8.88062L9.55975 8.87823L9.56384 8.87536C9.5779 8.86796 9.58538 8.86413 9.58538 8.8627L9.59513 8.84645L9.60148 8.83331L10.4262 7.27285C10.4362 7.25373 10.455 7.24155 10.4764 7.24155L12.1384 7.2425C12.1703 7.2425 12.1989 7.22841 12.2191 7.20762C12.2406 7.18564 12.2533 7.15529 12.2533 7.12232V7.11682C12.2533 7.09962 12.2533 7.09126 12.2524 7.0903L12.2477 7.08003L12.2463 7.07764L12.2395 7.06545L12.2388 7.0645L11.4025 5.49519C11.3939 5.47704 11.3918 5.45458 11.4025 5.43546L12.2381 3.86472C12.2536 3.83629 12.2563 3.8026 12.2488 3.77321C12.2409 3.74287 12.222 3.71635 12.1942 3.69986C12.186 3.69484 12.1769 3.6915 12.169 3.68911L12.1656 3.68767C12.1538 3.68529 12.1434 3.68433 12.1336 3.68433H12.1311L10.4795 3.68767H10.478C10.4584 3.68767 10.4387 3.67644 10.4274 3.65685L9.60012 2.09543C9.58561 2.06604 9.55907 2.04597 9.53118 2.03761C9.50261 2.02925 9.47177 2.03259 9.44387 2.04788L9.44047 2.0498L9.43616 2.05314C9.42324 2.06103 9.41666 2.06485 9.41507 2.06533L9.406 2.08253L9.39965 2.09567H9.39852Z"
+              fill="currentColor"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_1_50">
+              <rect width="19" height="17" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
+      </span>
+      <span class="banner-text">Most Popular</span>
+    </div>`
+      ]
+
+      const products = document.querySelectorAll('.product-card')
+
+      let productNumber = 1
+      products.forEach((product, index) => {
+        const productIsBanner = !!product.dataset.isBanner
+
+        if (productIsBanner) {
+          product.classList.add('product-banner')
+          const badgeBanner = product.querySelector('.badge-banner')
+          if (badgeBanner) badgeBanner.remove()
+
+          const productImage = product.querySelector('.product-image')
+          const offerHeadline = product.querySelector('.offer-headline')
+          const offerText = product.querySelector('.card-services p')
+          const bannerLink = product.querySelector('a.btn-banner')
+          if (bannerLink) {
+            bannerLink.remove()
+          }
+          product.innerHTML = ''
+          if (productImage) {
+            product.appendChild(productImage)
+          }
+          if (offerHeadline || offerText) {
+            const contentDiv = document.createElement('div')
+            contentDiv.classList.add('content')
+            if (offerHeadline) {
+              contentDiv.appendChild(offerHeadline)
+            }
+            if (offerText) {
+              offerText.classList.add('offer-text')
+              contentDiv.appendChild(offerText)
+            }
+            product.appendChild(contentDiv)
+          }
+          if (bannerLink) {
+            product.appendChild(bannerLink)
+          }
+
+          return
+        }
+        const badgeBanner = product.querySelector('.badge-banner')
+        if (badgeBanner) {
+          if (productNumber === 1) {
+            product.classList.add('featured', 'top-choice')
+            badgeBanner.outerHTML = badges[0]
+          } else if (productNumber === 2) {
+            product.classList.add('featured', 'popular-choice')
+            badgeBanner.outerHTML = badges[1]
+          } else {
+            badgeBanner.remove()
+          }
+        }
+
+        if (!productIsBanner) {
+          const rankNumber = product.querySelector('.rank-number')
+          if (rankNumber) {
+            rankNumber.innerHTML = productNumber
+            productNumber++
+          }
+        }
+
+        const statsSection = product.querySelector('.stats-section')
+        if (statsSection) {
+          const ratingScore = parseFloat(statsSection.getAttribute('data-stats-score')) || 0
+          const statsLabel = statsSection.querySelector('.stats-label')
+          if (statsLabel) {
+            if (ratingScore >= 9.0) {
+              statsLabel.textContent = 'Excellent'
+            } else if (ratingScore >= 7.0) {
+              statsLabel.textContent = 'Good'
+            } else {
+              statsLabel.textContent = 'Average'
+            }
+          }
+        }
+
+        const statsRating = product.querySelector('.stats-rating')
+        if (statsRating) {
+          const ratingText = statsRating.textContent.trim()
+          let rating = parseFloat(ratingText) || 0
+          if (rating < 0) {
+            rating = 0
+          }
+          rating = Math.min(rating, 5)
+          
+          const fullStars = Math.floor(rating)
+          const hasHalfStar = rating % 1 >= 0.5
+          const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0)
+
+          let starsHTML = '<div class="star-rating">'
+          for (let i = 0; i < fullStars; i++) {
+            starsHTML += '<span class="star full">★</span>'
+          }
+          if (hasHalfStar) {
+            starsHTML += '<span class="star half">★</span>'
+          }
+          for (let i = 0; i < emptyStars; i++) {
+            starsHTML += '<span class="star empty">★</span>'
+          }
+          starsHTML += '</div>'
+          statsRating.innerHTML = starsHTML
+        }
+
+        const refCta = product.querySelector('.btn-read-review span')
+        if (refCta && refCta.textContent === '') {
+          refCta.textContent = refCta.dataset.defaultValue
+        }
+
+        const mainCta = product.querySelector('.btn-visit-site span')
+        if (mainCta && mainCta.textContent === '') {
+          mainCta.textContent = mainCta.dataset.defaultValue
+        }
+      })
+    }
+
+    initializeProducts()
+  </script>
+</div>

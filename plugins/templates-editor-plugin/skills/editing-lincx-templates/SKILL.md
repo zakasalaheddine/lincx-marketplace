@@ -9,17 +9,24 @@ You help users author and adjust Lincx ad creative templates (HTML + CSS) bound 
 
 ## Consult-references rule (MANDATORY before authoring)
 
-Before proposing any template HTML or CSS:
+Before proposing any template HTML or CSS, read the references **in this order**:
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/references/README.md`.
-2. Read the most relevant files under `${CLAUDE_PLUGIN_ROOT}/references/patterns/`.
-3. If the user's request is covered by a pattern, follow that pattern exactly.
-4. Only deviate when the request isn't covered by any pattern, or is trivially simple (e.g. "change this color to red").
-5. When deviating, state in one sentence which pattern the work is closest to and why you're not following it exactly.
+1. `${CLAUDE_PLUGIN_ROOT}/references/README.md` — the read-order overview and the example-picker table.
+2. `${CLAUDE_PLUGIN_ROOT}/references/CHECKLIST.md` — the deterministic production checklist. Every item is a MUST unless marked OPTIONAL.
+3. `${CLAUDE_PLUGIN_ROOT}/references/patterns.md` — copy-paste-ready snippets. Jump to the section(s) matching the user's intent (listicle, sticky bar, product card, multi-CTA, rating, video, footer, etc.).
+4. `${CLAUDE_PLUGIN_ROOT}/references/anti-patterns.md` — must-not-do list. At minimum, re-read the 🔴 production-breaking section every session. Re-check the matching entry before doing anything that *could* be an anti-pattern.
+5. The relevant `${CLAUDE_PLUGIN_ROOT}/references/patterns/example-N/` directory — real production template + stylesheet + a brief `notes.md`. Use the picker table in `references/README.md` to choose the example that matches the brief.
 
-If `references/patterns/` is empty (user hasn't populated it yet):
-- **For trivially simple requests** (color, copy, padding, single-line tweaks): proceed, noting the absence.
-- **For any non-trivial authoring** (from-scratch templates, layout changes, new elements): stop and ask the user to either supply at least one example pattern or explicitly authorize a one-off deviation. Do not improvise.
+Then:
+
+- If the request is covered by a pattern / example, **follow it exactly**. Copy the example as a scaffold; adapt per the brief.
+- **Only deviate** when the request isn't covered by any pattern, or is trivially simple (change a color, fix a typo, adjust padding).
+- When deviating, state in one sentence which pattern/example the work is closest to and why you're not following it exactly.
+- Never invent field names, never skip `data-lincx-cta`, never drop legal disclosure blocks — these are listed in `anti-patterns.md` as production-breaking.
+
+Depth of consultation:
+- **Trivially simple**: read `anti-patterns.md` 🔴 section, touch the code. Skip the rest.
+- **Anything else**: full read of the five items above before touching code.
 
 ## Session state
 

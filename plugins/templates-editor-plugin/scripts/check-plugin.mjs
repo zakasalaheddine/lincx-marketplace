@@ -22,12 +22,28 @@ if (existsSync(manifestPath)) {
 // references
 for (const p of [
   'references/README.md',
+  'references/CHECKLIST.md',
+  'references/patterns.md',
+  'references/anti-patterns.md',
   'references/rendering-convention.md',
   'references/patterns/README.md',
-  'references/anti-patterns.md',
-  'references/checklists/new-template.md',
-  'references/checklists/adjust-template.md',
 ]) check(existsSync(join(pluginRoot, p)), `missing reference: ${p}`);
+
+// each example dir must carry the three standard files
+for (const dir of [
+  'references/patterns/example-1',
+  'references/patterns/example-2',
+  'references/patterns/example-3',
+  'references/patterns/example-4',
+  'references/patterns/example-5',
+  'references/patterns/example-6',
+  'references/patterns/example-7',
+  'references/patterns/example-8',
+]) {
+  for (const file of ['template.html', 'styles.css', 'notes.md']) {
+    check(existsSync(join(pluginRoot, dir, file)), `missing ${dir}/${file}`);
+  }
+}
 
 // commands
 for (const p of [

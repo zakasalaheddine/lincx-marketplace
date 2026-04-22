@@ -1,0 +1,69 @@
+<!--This is where you define how an ads feed will look-->
+<div class="lincx-ads-boxes-wrapper">
+  <!--The #ads tag is for looping over every ad in the ads feed-->
+  {{#ads}}
+  <!--This is where you define how each ad will look-->
+  <div class="lincx-ad-box" id="{{ adId }}">
+    <span class="lincx-ad-badge">
+      Ad
+      <label class="lincx-info-icon-wrapper" for="ad-info-{{adId}}">
+        <input type="checkbox" id="ad-info-{{adId}}" class="lincx-info-checkbox" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          viewBox="0 0 13 13"
+          fill="none"
+          class="lincx-info-icon"
+        >
+          <g clip-path="url(#clip0_12_584)">
+            <g opacity="0.6">
+              <path
+                d="M6.5 0.839844C3.1916 0.839844 0.5 3.53144 0.5 6.83984C0.5 10.1482 3.1916 12.8398 6.5 12.8398C9.8084 12.8398 12.5 10.1482 12.5 6.83984C12.5 3.53144 9.8084 0.839844 6.5 0.839844ZM6.5 11.6398C3.854 11.6398 1.7 9.48584 1.7 6.83984C1.7 4.19384 3.854 2.03984 6.5 2.03984C9.146 2.03984 11.3 4.19384 11.3 6.83984C11.3 9.48584 9.146 11.6398 6.5 11.6398Z"
+                fill="#333333"
+              />
+              <path
+                d="M5.90002 6.23984H7.10002V9.83984H5.90002V6.23984ZM5.90002 3.83984H7.10002V5.03984H5.90002V3.83984Z"
+                fill="#333333"
+              />
+            </g>
+          </g>
+          <defs>
+            <clipPath id="clip0_12_584">
+              <rect width="12" height="12" fill="white" transform="translate(0.5 0.839844)" />
+            </clipPath>
+          </defs>
+        </svg>
+        <div class="lincx-info-popup">
+          <label class="lincx-info-popup-close" for="ad-info-{{adId}}" aria-label="Close info popup">×</label>
+          <div class="lincx-info-popup-content">
+            <p>
+              We earn a commission from partner links displayed on this page, which may impact how and where their
+              offers appear.
+            </p>
+          </div>
+        </div>
+      </label>
+    </span>
+    <img src="{{image}}" alt="{{offer_headline}}" class="lincx-ad-image" />
+    <div class="lincx-ad-content">
+      <h6>{{{ offer_headline }}}</h6>
+      <h3>{{{ offer_text }}}</h3>
+    </div>
+    <div class="lincx-ad-actions">
+      <a
+        href="{{href}}"
+        target="_blank"
+        data-lincx-cta
+        data-lincx-cta-name="cta"
+        data-lincx-cta-position="cta"
+        data-default-value="Get Started"
+        class="cta-btn"
+      >
+        <span class="cta-btn-text">{{{ cta_text }}}</span>
+      </a>
+      <span class="cta-btn-ref-text">{{{ cta_ref_text }}}</span>
+    </div>
+  </div>
+  {{/ads}}
+</div>

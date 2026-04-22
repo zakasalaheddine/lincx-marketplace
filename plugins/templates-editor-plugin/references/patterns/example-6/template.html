@@ -1,0 +1,52 @@
+<div class="wrap" role="main">
+  <div class="listicle__container">
+    {{#ads}}
+    <div id="{{ adId }}">
+      <div class="listicle-item-{{ _index }}">
+        <div class="ads-listicle-item ads-listicle-item-{{ _index }}">
+          <h1 data-content="{{ listicle_headline }}">{{{ listicle_headline }}}</h1>
+          <div class="intro" data-content="{{ offer_text }}">{{{ offer_text }}}</div>
+        </div>
+
+        <!-- FEATURED  -->
+        <div class="ads-featured-benefits ads-featured-benefits-{{ _index }}">
+          <h3 class="section-title">Featured Benefits</h3>
+          <div class="benefit-card featured" data-group="{{ groupOffer }}" data-rank="">
+            <div class="image" data-content="{{imageURL}}{{src}}">
+              <img src="{{{ imageURL }}}" alt="{{ offer_headline }}" data-content="{{imageURL}}" />
+              <img src="{{{ src }}}" alt="{{ offer_headline }}" data-content="{{src}}" />
+            </div>
+            <div class="content">
+              <h2 data-content="{{ offer_headline }}">{{{ offer_headline }}}</h2>
+              <div data-content="{{ offer_text }}">{{{ offer_text }}}</div>
+              <div class="cta" data-content="{{cta_text}}">
+                <a class="btn" href="{{href}}" data-lincx-cta data-lincx-cta-name="cta" data-lincx-cta-position="cta">
+                  {{{ cta_text }}}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALL BENEFITS -->
+        <div class="ads-all-benefits ads-all-benefits-{{ _index }}">
+          <h3 class="section-title">All Benefits</h3>
+          <div class="benefit-card" data-group="{{ groupOffer }}" data-rank="">
+            <div class="image" data-content="{{imageURL}}{{src}}">
+              <img src="{{{ imageURL }}}" alt="{{ offer_headline }}" data-content="{{imageURL}}" />
+              <img src="{{{ src }}}" alt="{{ offer_headline }}" data-content="{{src}}" />
+            </div>
+            <div class="content">
+              <h2 data-content="{{ offer_headline }}">{{{ offer_headline }}}</h2>
+              <div data-content="{{ offer_text }}">{{{ offer_text }}}</div>
+              <div class="cta" data-content="{{cta_text}}">
+                <a class="btn" href="{{href}}" data-lincx-cta data-lincx-cta-name="cta" data-lincx-cta-position="cta">{{{ cta_text }}}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{/ads}}
+  </div>
+</div>
