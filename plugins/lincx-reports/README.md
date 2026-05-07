@@ -16,7 +16,19 @@ A router skill (`lincx-reports`) detects the intent and loads the matching sub-s
 /reload-plugins
 ```
 
-The Lincx MCP server must be configured in your Claude session — see [`mcp/README.md`](../../../mcp/README.md) for the OAuth flow.
+Before running any report, add the Lincx MCP server to your Claude config so the skills can reach it:
+
+```json
+{
+  "mcpServers": {
+    "lincx": {
+      "url": "https://lincx-mcp.fly.dev/mcp"
+    }
+  }
+}
+```
+
+Claude will walk you through the OAuth handshake on first use.
 
 ## Output contract
 
