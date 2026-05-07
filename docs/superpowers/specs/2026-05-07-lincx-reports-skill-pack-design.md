@@ -183,6 +183,186 @@ Three layers:
 
 Out of scope: asserting narrative wording (fights the model); number-format unit tests in isolation (covered by smoke); MCP tool tests (already covered in the server's suite).
 
+## MCP tool sufficiency check
+
+Mapped against the actual MCP surface in `mcp/src/tools/*.ts`. Each sub-skill is annotated with whether the current tools cover it, and what friction remains.
+
+| Skill need | Tools used | Status | Notes |
+|---|---|---|---|
+| Resolve "the Acme campaign" → campaign_id | `list_campaigns` | ⚠ workable with friction | No name-search param. Skill must paginate (limit max 100) and filter by name client-side. Fast on small networks; expensive on large ones. |
+| Resolve advertiser/site name → ID | `list_advertisers` / `list_sites` | ⚠ workable with friction | Same as above. |
+| List dimension sets + inspect | `list_dimension_sets`, `get_dimension_set` | ✓ sufficient | Catalog is finite; one call to list, one per inspection. Skill caches the catalog for the turn. |
+| Discover available filter keys | `get_event_stats_keys` | ✓ sufficient | 31-day window. Used to verify a dimension actually has values before querying. |
+| Run a multi-dim report over a date range | `report_query` | ✓ sufficient | `resolution` is `day` or `hour` only. Filters happen via `dimensions` breakdown + client-side narrowing. |
+| Single-zone timeseries | `get_zone_report` | ✓ sufficient | Avoids dimension-set selection entirely. Preferred path in `lincx-creative-anomalies` for single-zone questions. |
+| Auth + active network context | `auth_login`, `auth_status`, `network_list`, `network_switch` | ✓ sufficient | Skills surface errors, never carry credentials. |
+| Cross-network ("all my networks") | — | ✗ not supported | Each call is scoped to the active network. The skill explicitly tells the user this is a per-network report and asks them to switch if they want another network. |
+| Truncated response detection | response suffix `[Truncated…]` | ✓ sufficient | Skill matches on that literal suffix (introduced by `truncateIfNeeded` in `services/workApi.ts`) and refuses to synthesize numbers. |
+
+**Friction call-outs (recorded as future-MCP requests, not blockers for v1):**
+
+1. **`list_*` tools have no name/search filter.** Paginating thousands of campaigns to find one by name is a real cost. v1 mitigates by asking the user to either provide the ID or scope by advertiser ("which advertiser owns this campaign?") to narrow the search; if neither is forthcoming, the skill warns it may take several calls. A future MCP enhancement (`?q=` substring filter on list endpoints) would remove this entirely.
+2. **`report_query` response shape is dimension-set-defined.** The skill must read the keys returned from `get_dimension_set` and map them onto the response columns. We don't hardcode column names beyond the rendered output template. If a dimension set lacks an expected metric (e.g., a "revenue" dimension set without `fill_rate`), the skill renders the columns it has and notes the missing one in the narrative.
+3. **No bulk parent lookup.** "Campaigns owned by Acme advertiser" requires either an N+1 walk via `get_campaign_parents`, or — preferred — running `report_query` with `dimensions: ["advertiser_id","campaign_id"]` and filtering on the advertiser ID client-side. v1 always uses the latter.
+4. **No "this period vs prior period of same length" auto-derivation in the API.** The anomaly sub-skill builds the prior range itself in the skill body and runs two `report_query` calls.
+
+## Example transcripts
+
+These are illustrative — exact JSON payloads will vary by network. They establish the contract for each sub-skill's tool-call sequence and output shape.
+
+### Example 1 — campaign performance
+
+> **User:** How did the Acme Spring campaign do March 1–15?
+
+```
+Router (lincx-reports) selects → lincx-campaign-performance
+
+1. _shared/date-range.md → year is unspecified
+   Claude asks: "March 2026 or March 2025?"
+
+> User: 2026
+
+2. list_campaigns({ limit: 100, offset: 0 })
+   → [{id:"cmp_4f12", name:"Acme Spring", advertiser_id:"adv_a1"}, …]
+   Match found by case-insensitive substring. Single match → no follow-up question.
+
+3. list_dimension_sets({ limit: 100, offset: 0 })
+   → catalog includes "campaign_daily", "advertiser_daily", "zone_daily", …
+
+4. get_dimension_set({ id:"campaign_daily" })
+   → confirms dimensions include `date`, `campaign_id`;
+     metrics include `spend, impressions, clicks, conversions`.
+
+5. report_query({
+     dimensionSetId:"campaign_daily",
+     startDate:"2026-03-01",
+     endDate:"2026-03-15",
+     resolution:"day",
+     dimensions:["date","campaign_id"]
+   })
+   → 14 rows for cmp_4f12 (others filtered out client-side).
+```
+
+> **AI response:**
+>
+> Acme Spring spent $24,318 with 412 conversions over March 1–15, 2026 — a 4.2% CTR on 1.21M impressions.
+>
+> Conversions concentrated on March 8 (74) and March 12 (61); spend was steady at ~$1.6K/day. CTR held within ±0.3% of the period average; no day stood out as a problem.
+>
+> | date       |   spend | impressions | clicks | conversions |   ctr |  ecpm |
+> |------------|--------:|------------:|-------:|------------:|------:|------:|
+> | 2026-03-01 |  $1,612 |      82,440 |  3,388 |          27 | 4.11% | $19.55 |
+> | 2026-03-02 |  $1,587 |      80,910 |  3,341 |          24 | 4.13% | $19.61 |
+> | …          |       … |           … |      … |           … |     … |      … |
+> | 2026-03-15 |  $1,634 |      83,120 |  3,422 |          29 | 4.12% | $19.66 |
+>
+> Source: dimension set "campaign_daily" (`ds_camp_d`) · range 2026-03-01 → 2026-03-15 · resolution day · network svce6t
+
+### Example 2 — revenue summary
+
+> **User:** Give me revenue by advertiser for last week.
+
+```
+Router → lincx-revenue-summary
+
+1. _shared/date-range.md → "last week" with no anchor.
+   Claude asks: "Calendar week (Mon 2026-04-27 – Sun 2026-05-03)
+                or rolling 7 days (2026-04-30 – 2026-05-06)?"
+
+> User: rolling 7
+
+2. list_dimension_sets / get_dimension_set
+   → picks "advertiser_daily"; confirms `revenue, impressions, fill_rate, rpm`.
+
+3. report_query({
+     dimensionSetId:"advertiser_daily",
+     startDate:"2026-04-30",
+     endDate:"2026-05-06",
+     resolution:"day",
+     dimensions:["advertiser_id"]
+   })
+   → 18 rows (one per advertiser).
+   Skill aggregates day-level rows to advertiser totals client-side.
+```
+
+> **AI response:**
+>
+> $147,930 total revenue across 18 advertisers from April 30 – May 6, 2026; fill rate held at 87.4%.
+>
+> Acme Brands led with $42,180 (28.5% of total) at 91.2% fill. The next four advertisers contributed roughly equal shares ($14K–$18K each); the long tail of 13 advertisers added $32K combined.
+>
+> | advertiser    |  revenue | impressions | fill_rate |    rpm |
+> |---------------|---------:|------------:|----------:|-------:|
+> | Acme Brands   |  $42,180 |   2,118,400 |     91.2% | $19.91 |
+> | Northwind     |  $18,440 |   1,002,800 |     88.0% | $18.39 |
+> | Globex        |  $16,210 |     911,500 |     86.7% | $17.79 |
+> | …             |        … |           … |         … |      … |
+> | **Total (18)**| **$147,930** | **8,206,300** | **87.4%** | **$18.03** |
+>
+> Source: dimension set "advertiser_daily" (`ds_adv_d`) · range 2026-04-30 → 2026-05-06 · resolution day · network svce6t
+
+### Example 3 — creative anomalies (anomaly mode)
+
+> **User:** Which zones dropped this week vs last week?
+
+```
+Router → lincx-creative-anomalies (anomaly mode)
+
+1. _shared/date-range.md
+   Claude asks: "Confirm: this week = 2026-05-04 → 2026-05-07
+                 vs last week = 2026-04-27 → 2026-04-30 (4 days each)?
+                 Or compare full prior week 2026-04-27 → 2026-05-03?"
+
+> User: full prior week
+
+   → current = 2026-05-01 → 2026-05-07,
+     prior   = 2026-04-24 → 2026-04-30. Skill confirms range mismatch
+     (7 days each) before proceeding.
+
+2. list_dimension_sets / get_dimension_set
+   → picks "zone_daily"; dimensions include `zone_id`; metrics
+     `impressions, revenue, ctr`.
+
+3. report_query (current week) and report_query (prior week)
+   in two calls. Two rows-per-zone responses.
+
+4. Skill joins on zone_id, computes delta_pct on revenue.
+   Volume floor = 10% of median current revenue ≈ $84.
+   Threshold ±25%. 6 rows clear both.
+```
+
+> **AI response:**
+>
+> 6 zones moved more than ±25% week-over-week with non-trivial volume; the biggest drop was zone "Homepage Top" at -41%.
+>
+> The drops cluster on three sites; the lifts are spread across the long tail. The single largest dollar-impact mover was "Homepage Top" (-$1,240). No data was missing for any zone in either range.
+>
+> | zone           | current  | prior    | delta_pct | delta_abs |
+> |----------------|---------:|---------:|----------:|----------:|
+> | Homepage Top   |  $1,790  |  $3,030  |    -40.9% |   -$1,240 |
+> | Footer Banner  |    $312  |    $498  |    -37.3% |     -$186 |
+> | Sidebar A      |    $702  |    $988  |    -28.9% |     -$286 |
+> | Article Inline |  $1,640  |  $1,212  |    +35.3% |     +$428 |
+> | Sticky Mobile  |    $890  |    $688  |    +29.4% |     +$202 |
+> | Above Fold B   |    $402  |    $311  |    +29.3% |      +$91 |
+>
+> Source: dimension set "zone_daily" (`ds_zone_d`) · range 2026-05-01 → 2026-05-07 (vs 2026-04-24 → 2026-04-30) · resolution day · network svce6t
+
+### Example 4 — failure case (auth not present)
+
+> **User:** Revenue by site this week.
+
+```
+1. list_dimension_sets({}) → "Error: Not authenticated. Use 'auth_login' first."
+   Skill stops. Does not retry.
+```
+
+> **AI response:**
+>
+> No data — your Lincx session isn't authenticated. Run `auth_login` (you'll get a browser prompt to sign in), then `network_list` and `network_switch` if you need to pick a network. Then re-ask the question.
+
+---
+
 ## Cross-repo coordination
 
 Because the skill pack lives in `lincx-marketplace` and references tool names defined in `mcp/src/tools/*.ts`:
