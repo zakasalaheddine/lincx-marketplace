@@ -28,6 +28,8 @@ You produce a revenue / fill / RPM summary. Output contract is `_shared/output-t
 
    Plus a **totals row** at the bottom showing aggregate `revenue`, total `impressions`, weighted-average `fill_rate`, and overall `rpm`.
 
+Apply `_shared/mcp-call-patterns.md` for pagination semantics, error-string handling, truncation detection, and the ≤ 5 tool-call budget.
+
 ## Multi-entity asks
 
 "Revenue by advertiser and site" → run two separate `report_query` calls and emit two tables. Do not Cartesian-product.

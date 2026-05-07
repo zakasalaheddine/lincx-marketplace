@@ -46,6 +46,8 @@ Triggered by "dropped", "fell", "spiked", "this week vs last week", "today vs ye
 
 If the user asks about a single specific zone, prefer `get_zone_report({ id, resolution, startDate, endDate })` directly. It is cheaper and avoids dimension-set selection.
 
+Apply `_shared/mcp-call-patterns.md` across both modes for pagination semantics, error-string handling, truncation detection, and the ≤ 5 tool-call budget.
+
 ## Edge cases
 
 - **No rows clear the threshold** → state plainly. Offer to lower threshold or floor; do not lower silently.
