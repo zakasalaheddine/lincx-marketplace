@@ -1,0 +1,8 @@
+{
+  "name": "lincx-reports",
+  "description": "Manager-friendly reports — campaign performance, revenue, creative anomalies — over the Lincx MCP. Read-only.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Lincx"
+  }
+}
