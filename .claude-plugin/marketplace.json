@@ -10,6 +10,11 @@
       "name": "templates-editor-plugin",
       "source": "./plugins/templates-editor-plugin",
       "description": "Build and adjust Lincx ad templates (HTML+CSS) with a live preview loop"
+    },
+    {
+      "name": "lincx-reports",
+      "source": "./plugins/lincx-reports",
+      "description": "Manager-friendly reports — campaign performance, revenue, creative anomalies — over the Lincx MCP"
     }
   ]
 }
