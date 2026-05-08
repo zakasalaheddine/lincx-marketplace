@@ -4,11 +4,12 @@ argument-hint: <templateId>
 ---
 
 Invoke the `editing-lincx-templates` skill in **adjust** mode with `templateId={{arg}}`. The skill will:
-1. Verify Lincx auth (call `mcp__claude_ai_Lincx__auth_status`, prompt login if needed).
-2. Ask the user for `htmlPath` and `cssPath` in their current project.
-3. Call `mcp__claude_ai_Lincx__get_template(id={{arg}})`; write `html` and `css` to the chosen paths.
-4. Call `mcp__claude_ai_Lincx__get_creative_asset_group(id=<creativeAssetGroupId from template>)`; cache the schema into session state.
-5. Upsert a session-state entry in `./.lincx-session.json` via `scripts/session-state.mjs` with `{templateId, creativeAssetGroupId, htmlPath, cssPath, previewPath, version, dirty:false, cagSchema, mockAdsSource:{kind:"synthesized"}, mockAds:[]}`.
-6. Trigger a first render (run `node ${CLAUDE_PLUGIN_ROOT}/scripts/preview-render.mjs <entryId>` directly) so the preview opens in the browser.
+1. Verify auth via `auth_status`.
+2. Ask the user for `htmlPath` and `cssPath`.
+3. Call `mcp__claude_ai_Lincx__get_template_preview_bundle(templateId={{arg}})`. The bundle includes html, css, the CAG schema, the chosen zone id, and a `mockAds` array (real ads from the highest-traffic zone, or synthesized from the CAG if no zone is bound).
+4. Persist the bundle to `./.lincx-session.bundle.json`, then run `node ${CLAUDE_PLUGIN_ROOT}/scripts/resolve-zone-and-ads.mjs ./.lincx-session.bundle.json <entryId> <htmlPath> <cssPath> <projectRoot>` to write files and produce a session-state patch.
+5. Merge the patch into `./.lincx-session.json` via `scripts/session-state.mjs::upsertEntry` with `dirty:false`. Delete `./.lincx-session.bundle.json`.
+6. Surface any `mockAdsSource.warnings` to the user.
+7. Dispatch `node ${CLAUDE_PLUGIN_ROOT}/scripts/preview-render.mjs <entryId>` to open the browser preview.
 
 Do not modify files the skill flow doesn't explicitly instruct. Follow the consult-references rule in the skill body before proposing any HTML/CSS edits.
