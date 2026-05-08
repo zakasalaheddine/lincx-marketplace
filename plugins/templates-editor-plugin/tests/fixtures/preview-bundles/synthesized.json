@@ -1,0 +1,12 @@
+{
+  "templateId": "tpl_x",
+  "version": 3,
+  "html": "<h1>{{ headline }}</h1>",
+  "css": "",
+  "creativeAssetGroupId": "cag_y",
+  "cagSchema": { "fields": [{ "name": "headline", "type": "string" }] },
+  "chosenZoneId": null,
+  "mockAds": [{ "headline": "Mock headline 1" }, { "headline": "Mock headline 2" }],
+  "source": "synthesized",
+  "warnings": ["No zones are bound to this template. Using synthesized ads."]
+}
