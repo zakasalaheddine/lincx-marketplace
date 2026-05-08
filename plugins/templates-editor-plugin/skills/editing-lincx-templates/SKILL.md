@@ -52,7 +52,11 @@ Single source of truth: `./.lincx-session.json` in the user's current working di
       "version": "<number or null>",
       "dirty": false,
       "cagSchema": { "fields": [ ... ] },
-      "mockAdsSource": { "kind": "synthesized" | "zone", "zoneId": "..." },
+      "mockAdsSource": {
+        "kind": "zone-resolved | zone | synthesized | synthesized-fallback",
+        "zoneId": "<string or null>",
+        "warnings": ["..."]
+      },
       "mockAds": []
     }
   ]
@@ -67,12 +71,14 @@ Use `${CLAUDE_PLUGIN_ROOT}/scripts/session-state.mjs` (`readSessionState`, `writ
 
 1. `auth_status` — if unauthenticated, tell the user to run `auth_login` and stop.
 2. Ask the user where to place the files (prompt for `htmlPath` and `cssPath` under their current project). Do not default silently.
-3. `get_template(id)` → write `html` and `css` to the chosen paths.
-4. `get_creative_asset_group(id=<creativeAssetGroupId from template>)` → cache as `cagSchema`.
-5. Upsert entry into `.lincx-session.json` (set `dirty:false`, `version` from template, `previewOpened:false`).
-6. Dispatch a first render: `node ${CLAUDE_PLUGIN_ROOT}/scripts/preview-render.mjs <entryId>`. The browser opens.
-7. Converse with the user. When authoring edits, apply the consult-references rule first. Every Edit/Write triggers the hook, which re-renders preview silently. Mark `dirty:true` after any write.
-8. On `/lincx-template-save` → Flow C.
+3. `mcp__claude_ai_Lincx__get_template_preview_bundle(templateId=<id>)`. Surface any error inline; do not mutate session state on error.
+4. Persist the returned bundle to `./.lincx-session.bundle.json` (caller-local, gitignored).
+5. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/resolve-zone-and-ads.mjs ./.lincx-session.bundle.json <entryId> <htmlPath> <cssPath> <projectRoot>`. The script writes html/css to disk and prints a session-state patch on stdout.
+6. Merge the patch into `.lincx-session.json` via `upsertEntry`. Set `dirty:false`, `previewOpened:false`. Delete `./.lincx-session.bundle.json`.
+7. If `mockAdsSource.warnings` is non-empty, print each warning to the user once.
+8. Dispatch the renderer: `node ${CLAUDE_PLUGIN_ROOT}/scripts/preview-render.mjs <entryId>`. The browser opens.
+9. Converse with the user. Apply the consult-references rule before authoring edits. Every Edit/Write triggers the hook, which re-renders silently using the cached `mockAds`. Mark `dirty:true` after any write.
+10. On `/lincx-template-save` → Flow C.
 
 ### Flow B — Build from scratch (from `/lincx-template-new <name>`)
 
@@ -114,8 +120,12 @@ Use `${CLAUDE_PLUGIN_ROOT}/scripts/session-state.mjs` (`readSessionState`, `writ
 
 ### Flow F — Refresh schema (from `/lincx-template-refresh-schema`)
 
-1. For each entry, `get_creative_asset_group(id=entry.creativeAssetGroupId)` → replace `cagSchema`.
-2. Dispatch renderer for each.
+1. For each entry whose `mockAdsSource.kind` is `zone-resolved` or `synthesized-fallback`:
+   - `mcp__claude_ai_Lincx__get_template_preview_bundle(templateId=entry.templateId)`.
+   - Run the resolver script as in Flow A step 5; merge the resulting patch.
+   - Print any `warnings`.
+2. For entries whose `kind` is `zone` (manual override) or `synthesized` (Flow B), only re-fetch the CAG via `mcp__claude_ai_Lincx__get_creative_asset_group(id=entry.creativeAssetGroupId)` and replace `cagSchema`. Leave `mockAds` and `mockAdsSource` unchanged.
+3. Dispatch `preview-render.mjs` for each affected entry.
 
 ## Never do
 
