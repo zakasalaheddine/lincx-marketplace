@@ -1,0 +1,12 @@
+{
+  "templateId": "tpl_x",
+  "version": 3,
+  "html": "",
+  "css": "",
+  "creativeAssetGroupId": "cag_y",
+  "cagSchema": { "fields": [{ "name": "headline", "type": "string" }] },
+  "chosenZoneId": "zn_C",
+  "mockAds": [{ "wrongField": "x" }],
+  "source": "zone",
+  "warnings": []
+}

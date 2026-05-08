@@ -1,0 +1,12 @@
+{
+  "templateId": "tpl_x",
+  "version": 3,
+  "html": "<h1>{{ headline }}</h1>",
+  "css": "h1{color:red}",
+  "creativeAssetGroupId": "cag_y",
+  "cagSchema": { "fields": [{ "name": "headline", "type": "string" }] },
+  "chosenZoneId": "zn_B",
+  "mockAds": [{ "headline": "Real B1" }, { "headline": "Real B2" }],
+  "source": "zone",
+  "warnings": []
+}
