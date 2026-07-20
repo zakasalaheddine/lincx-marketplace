@@ -16,7 +16,7 @@
 - **Enabled gate at every level:** `enabled === true && archived !== true`. `archived` is **omitted from list rows when false** — treat a missing `archived` key as `false`.
 - **Viability is a per-ad conjunction:** `has_live_viable_ad = ∃ ad: ad.enabled && !ad.archived && creativeResolves(ad.creativeId)`. Never combine a separate "some enabled ad" flag with a separate "some creative resolves" flag.
 - **`exceptParams.zoneId` = exclusion.** Zone only in `exceptParams` → not targeted. Zone in both `params.zoneId` and `exceptParams.zoneId` → excluded but reported as `conflicting`.
-- **Exhaustive scan is mandatory** — no `zoneId` filter exists on `list_ad_groups`; the whole network's ad groups must be paged. Scan at `limit:50` (field-expanded rows are size-capped at `limit:100`).
+- **Exhaustive scan is mandatory** — no `zoneId` filter exists on `list_ad_groups`; the whole network's ad groups must be paged. Scan at `limit:50` **following `next_offset` until `has_more` is false** — full-`params` rows are size-capped and truncate below `limit` (verified live), so a fixed offset stride skips dropped rows and breaks exhaustiveness. `fields` is top-level only (nested `params.zoneId` ignored). Same `next_offset` rule for `list_campaigns` / `list_ads`. (Supersedes any "parallel fan-out" wording in the Task 4 skill text below.)
 - **plugin.json** requires non-empty `name`, `version`, `description` (enforced by `check-plugin.mjs`).
 - **Commit after every task.** Conventional Commit messages, end body with `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
 
