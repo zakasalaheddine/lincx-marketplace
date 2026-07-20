@@ -54,10 +54,15 @@ creative attached) or **where it is off**." Exhaustive — no targeted ad group 
      page before trusting the map. Rows carry `enabled` + `archived`; build
      `campaigns = { [id]: { enabled, archived } }`. A missing campaign would make a
      live ad group misreport "off at campaign", so this map must be complete.
-   - **Ads by campaign, not by group:** dedupe the matched `campaignId`s, then
-     `list_ads(campaignId: X, fields: ["adGroupId","creativeId","enabled","archived"])`
-     per unique campaign (parallel), and bucket rows into
-     `adsByGroup = { [adGroupId]: [ads] }` (keep only matched ad-group ids).
+   - **Ads by campaign (exhaustive — page like the scans above):** dedupe the
+     matched `campaignId`s. For each unique campaign call
+     `list_ads(campaignId: X, limit: 100, offset: 0, fields: ["adGroupId","creativeId","enabled","archived"])`,
+     read `total`, then fan out the remaining offsets (100, 200, … up to `total`)
+     in one parallel batch; assert each page's returned count equals
+     `min(100, total - offset)` and refetch a short page before trusting it.
+     `list_*` tools default to `limit: 20`, so an UNPAGED call silently drops ads
+     and would misreport a live ad group as off. Bucket all rows into
+     `adsByGroup = { [adGroupId]: [ads] }`, keeping only matched ad-group ids.
    - **Creatives:** dedupe the `creativeId`s of the enabled ads, `get_creative(id)`
      each (parallel). Build `creatives = { [id]: { creativeAssetGroupId } }`; a
      creative that does not resolve → `null`.
