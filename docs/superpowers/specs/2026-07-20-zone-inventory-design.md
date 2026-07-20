@@ -1,5 +1,12 @@
 # Zone Inventory — design
 
+> **SUPERSEDED (2026-07-20):** the client-side scan + rollup described below was
+> moved server-side into the MCP composite `get_zone_targeting_inventory` (see the
+> lincx-mcp repo). The `/zone-targeted` skill is now a thin presenter of that tool;
+> the client-side scan and the `zone-inventory-rollup.mjs` helper were removed. This
+> doc is kept for the data-model findings and rollup semantics, which the MCP tool
+> ports verbatim.
+
 > Workflow #1: "For zone X, list every ad group directly targeted to it, and for
 > each tell me whether it's fully live — campaign, ad group, and ad all enabled
 > with a viable creative attached — or where it's off."
