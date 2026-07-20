@@ -130,3 +130,10 @@ test('formatReport renders a markdown table with a summary line', () => {
   assert.match(out, /AG1/);
   assert.match(out, /1 targeted/);
 });
+
+test('ad group whose campaign is absent from the campaigns map rolls up off at campaign', () => {
+  const { rows } = rollup(base({ campaigns: {} }));
+  assert.equal(rows[0].campaign_on, false);
+  assert.equal(rows[0].fully_live, false);
+  assert.deepEqual(rows[0].off_reason, ['campaign']);
+});
