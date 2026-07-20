@@ -25,7 +25,8 @@ view in the UI.
   `advertiserId`). The exhaustive set therefore requires scanning **every** ad
   group in the network and filtering client-side on `params.zoneId`. This is the
   "parent-scope / pagination fix" the workflow names. Core Digital has **1150**
-  ad groups → 12 pages at `limit:100`.
+  ad groups; paged at `limit:50` following `next_offset` (see Skill flow — full
+  `params` rows truncate, so paging is `next_offset`-driven, ~23+ pages).
 - `list_ad_groups` rows are compact and already carry everything for the ad-group
   level: `{ id, name, enabled, archived, params, campaignId, advertiserId,
   creativeAssetGroupId }` via `fields`.
@@ -103,32 +104,38 @@ plugins/lincx-inventory/
 └── tests/zone-inventory-rollup.test.mjs
 ```
 
-### Skill flow — parallel-batched, not sequential
+### Skill flow — sequential paging, follow `next_offset`
 
-Every fan-out below is issued as one parallel batch of MCP calls (Claude batches
-tool calls in a single turn). Sequential paging is the main avoidable cost.
+Pagination is **sequential and driven by `next_offset`**, not fixed-stride
+parallel fan-out. Verified against live data (2026-07-20): `list_ad_groups` with
+full `params` is size-capped — a `limit:100` page returned only 62 rows with a
+`truncated` object and `next_offset:62`. Row size is data-dependent (some ad
+groups carry huge `dateTime`/`params` arrays), so no fixed limit is provably safe
+and a fixed offset stride skips the fetched-but-dropped rows, breaking
+exhaustiveness. `fields` is **top-level only** — nested `params.zoneId` is ignored
+(the whole `params` object is dropped), so `params` cannot be narrowed to dodge
+truncation. The one correct rule: page following `next_offset` until `has_more` is
+false. Only independent single-entity gets (`get_creative`) may be parallel-batched.
 
 1. `get_zone <zoneId>` — confirm it exists; capture CAG + template for the header.
 2. **Scan (all ad groups — exhaustive, no zoneId filter exists):**
-   - Page 1: `list_ad_groups` `limit:50`,
-     `fields:["name","params","exceptParams","enabled","archived","campaignId","creativeAssetGroupId"]`.
-     Row `total` reveals the count (e.g. 1150).
-   - **Fan out the remaining offsets in ONE parallel batch** (offsets 50…total),
-     not 23 sequential pages. Worst case a speculative page is empty — harmless.
-   - `limit:50` (not 100) because field-expanded rows are size-capped and a
-     `limit:100` page can silently truncate; assert each page's returned row
-     count matches its `limit` (or `total−offset`) to prove nothing was dropped.
+   - `list_ad_groups` `limit:50`,
+     `fields:["name","params","exceptParams","enabled","archived","campaignId","creativeAssetGroupId"]`,
+     `offset:0`. Row `total` reveals the count (e.g. 1150).
+   - Page following `next_offset` to the end. A page may return fewer rows than
+     `limit`; `next_offset` is authoritative. Refetching a short offset re-truncates
+     identically — the remedy is to continue from `next_offset`.
    - Keep rows where `params.zoneId ∋ zoneId`. Apply the `exceptParams` rule above.
-3. For the matched set (all parallel-batched, all deduped):
-   - **Campaign enabled-map:** page `list_campaigns` `limit:100` (rows carry
-     `enabled` + `archived`) — ~7 pages for Core Digital, fanned out in one batch —
-     and build `campaignId → {enabled, archived}`. (Fewer calls than one
-     `get_campaign` per unique campaign, and reusable.)
-   - **Ads by campaign, not by group:** dedupe matched `campaignId`, then
+   - If collected rows < `total`, report it — never present a partial list as exhaustive.
+3. For the matched set (dedupe IDs; same `next_offset` paging rule):
+   - **Campaign enabled-map:** page `list_campaigns` `limit:100` following
+     `next_offset` (rows carry `enabled` + `archived`) and build
+     `campaignId → {enabled, archived}`. (One map, reused for all matched groups.)
+   - **Ads by campaign, not by group:** dedupe matched `campaignId`, then page
      `list_ads?campaignId=X` `fields:["adGroupId","creativeId","enabled","archived"]`
-     per unique campaign (parallel batch), and bucket rows back by `adGroupId`.
-     `list_ads` accepts `campaignId` and returns `adGroupId` per row (verified) —
-     so U calls, U = unique campaigns ≤ M matched groups, often far fewer.
+     following `next_offset` per unique campaign, and bucket rows back by
+     `adGroupId`. `list_ads` accepts `campaignId` and returns `adGroupId` per row
+     (verified). `list_*` defaults to `limit:20` — an unpaged call drops ads.
    - **Creatives:** dedupe `creativeId` across the enabled ads, `get_creative`
      each in one parallel batch → resolves? CAG match?
 4. Write raw JSON to the scratchpad, run `zone-inventory-rollup.mjs`, print its
@@ -170,10 +177,10 @@ is a later pass.
 
 ## Cost note
 
-Round-trips collapse from ~30 sequential to ~4–5 batched **turns**: (1) get_zone
-+ scan page 1; (2) fan-out scan pages; (3) list_campaigns pages + list_ads per
-unique campaign; (4) get_creative per unique creative; (5) rollup. Total *calls*
-still scale with the scan (≈ total/50 pages) but run in parallel. No way to skip
-the full scan without breaking exhaustiveness — an off ad group under an
-unscanned advertiser is exactly what the query hunts. No server-side composite
-added (MCP stays thin per its CLAUDE.md).
+The ad-group scan is inherently **sequential** (≈ total/50 pages, each starting at
+the prior page's `next_offset`) because response truncation makes page size
+data-dependent — the fixed-stride parallel fan-out first considered is unsafe here
+(it skips dropped rows). Matched-set campaign/ads paging is also `next_offset`-driven;
+only `get_creative` fans out in parallel. No way to skip the full scan without
+breaking exhaustiveness — an off ad group under an unscanned advertiser is exactly
+what the query hunts. No server-side composite added (MCP stays thin per its CLAUDE.md).
