@@ -16,18 +16,26 @@ creative attached) or **where it is off**." Exhaustive.
 ## Flow
 
 1. Call **`get_zone_targeting_inventory({ zoneId, mode })`**. It does the whole audit
-   server-side and returns `{ zone, summary, groups[], conflicting[], scan }`.
-   Each `groups[]` row carries `campaign_on`, `adgroup_on`, `has_live_viable_ad`,
-   `fully_live`, `off_reason`, `archived` (plus `has_enabled_ad` / `creative_resolves`
-   diagnostics). **Do NOT scan ad groups yourself** — the tool is exhaustive; the
-   old client-side `list_ad_groups` scan is gone.
+   server-side. Read the full result from **`structuredContent`**, NOT from the text
+   content (the text is a one-line header only): `{ zone, summary, groups[],
+   conflicting[], scan }`. Each `groups[]` row carries `campaign_on`, `adgroup_on`,
+   `has_live_viable_ad`, `fully_live`, `off_reason`, `archived` (plus `has_enabled_ad`
+   / `creative_resolves` diagnostics). **Do NOT scan ad groups yourself** — the tool
+   is exhaustive; the old client-side `list_ad_groups` scan is gone.
 2. Render a markdown table from `groups`: one row per ad group with a ✅/❌ per level
    (campaign / ad group / live+viable ad) and the `off_reason` when not fully live.
    Head it with the zone name / CAG / template and the summary line
-   (`N targeted · X live · Y off · Z archived · C conflicting`).
+   (`N targeted · X live · Y off · Z archived · C conflicting`). The `groups` array
+   is **always complete** — every targeted ad group is present. Group the table by
+   fully-live / off-non-archived / off-archived for readability.
    - If `summary.conflicting > 0`, list the `conflicting` groups below the table
      (they target AND except the zone — excluded from targeting).
-   - If `groupsTruncated` is present, say so — do not imply the list is complete.
+   - If the result has **`namesOmitted: true`** (only on very high-count zones), the
+     rows carry ids + flags but no names — render with ids; the list is still
+     complete. If it has **`complete: false`** (pathological sizes only), the tool
+     returned ids only — re-run once per `mode` (`live` then `off`) to get the full
+     detail in splits; never present it as complete. Otherwise the response is
+     complete with names — do not caveat completeness.
 
 ## Guardrails
 - Never pass `networkId` — it is session-scoped upstream.
