@@ -19,7 +19,6 @@ if (existsSync(manifestPath)) {
 }
 
 for (const p of [
-  'scripts/zone-inventory-rollup.mjs',
   'scripts/session-state.mjs',
   'commands/zone-targeted.md',
   'skills/zone-targeted/SKILL.md',
