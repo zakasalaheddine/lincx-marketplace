@@ -1,4 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 export function readState(filePath) {
   if (!existsSync(filePath)) return null;
@@ -24,4 +26,28 @@ export function getLastZone(filePath) {
 export function setLastZone(filePath, zoneId) {
   const state = readState(filePath) ?? {};
   writeState(filePath, { ...state, lastZoneId: zoneId });
+}
+
+const DEFAULT_PATH = join(homedir(), '.lincx-zone-state.json');
+
+// CLI:
+//   node session-state.mjs get [filePath]           -> prints remembered zoneId (empty if none)
+//   node session-state.mjs set <zoneId> [filePath]  -> remembers zoneId
+export function cli(argv) {
+  const [cmd, a, b] = argv;
+  if (cmd === 'get') {
+    const z = getLastZone(a || DEFAULT_PATH);
+    if (z) process.stdout.write(z + '\n');
+    return 0;
+  }
+  if (cmd === 'set' && a) {
+    setLastZone(b || DEFAULT_PATH, a);
+    return 0;
+  }
+  process.stderr.write('usage: session-state.mjs get [filePath] | set <zoneId> [filePath]\n');
+  return 2;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  process.exit(cli(process.argv.slice(2)));
 }

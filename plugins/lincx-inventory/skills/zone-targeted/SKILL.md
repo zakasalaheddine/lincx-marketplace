@@ -47,10 +47,13 @@ creative attached) or **where it is off**." Exhaustive — no targeted ad group 
    to scope the next calls.
 
 4. **Fetch rollup inputs for the matched set** (parallel batches, deduped):
-   - **Campaigns:** page `list_campaigns(limit: 100, offset: …)` across the whole
-     network (rows carry `enabled` + `archived`), fanned out in one batch, and
-     build `campaigns = { [id]: { enabled, archived } }`. (One map, reused for all
-     matched groups — fewer calls than per-campaign gets.)
+   - **Campaigns (exhaustive — same rigor as the ad-group scan):** call
+     `list_campaigns(limit: 100, offset: 0)`, read `total`, then fan out the
+     remaining offsets (100, 200, … up to `total`) in ONE parallel batch. Assert
+     each page's returned count equals `min(100, total - offset)`; refetch a short
+     page before trusting the map. Rows carry `enabled` + `archived`; build
+     `campaigns = { [id]: { enabled, archived } }`. A missing campaign would make a
+     live ad group misreport "off at campaign", so this map must be complete.
    - **Ads by campaign, not by group:** dedupe the matched `campaignId`s, then
      `list_ads(campaignId: X, fields: ["adGroupId","creativeId","enabled","archived"])`
      per unique campaign (parallel), and bucket rows into
