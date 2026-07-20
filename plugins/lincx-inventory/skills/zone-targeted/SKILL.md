@@ -24,48 +24,53 @@ creative attached) or **where it is off**." Exhaustive — no targeted ad group 
   `exceptParams.zoneId` is an **exclusion**: zone only in exceptParams → not
   targeted; zone in both → excluded, reported as `conflicting`.
 
-## Flow (issue each fan-out as ONE parallel batch of tool calls)
+## Flow
+
+Pagination rule (applies to every `list_*` call below): **page sequentially,
+following `next_offset` until `has_more` is false.** `fields` is top-level only, so
+the ad-group scan must request full `params` — those rows are large and the
+response is size-capped, so a page often returns FEWER rows than `limit` and
+includes a `truncated` object; the endpoint then sets `next_offset` to exactly
+where you must continue. `next_offset` is authoritative — always pass it as the
+next `offset`. NEVER assume a fixed stride (`offset += limit`) and never fan list
+pages out in parallel: a fixed stride skips the fetched-but-dropped rows and
+silently breaks exhaustiveness. Refetching the same offset does not help (it
+re-truncates identically) — the remedy for a short page is to continue from
+`next_offset`. Only independent single-entity gets (`get_creative`) may be
+parallel-batched.
 
 1. **Confirm the zone.** `get_zone(id=zoneId)`. Capture its `creativeAssetGroupId`
    (the CAG) and `templateId` for the header. If it 404s, surface and stop.
 
 2. **Exhaustive scan of ALL ad groups** (no zoneId filter exists upstream):
-   - Call `list_ad_groups(limit: 50, offset: 0, fields: ["name","params","exceptParams","enabled","archived","campaignId","creativeAssetGroupId"])`.
-     Read `total`.
-   - **Fan out the remaining offsets in one parallel batch**: `offset = 50, 100, …`
-     up to `total`. Do NOT page one-at-a-time.
-   - Use `limit: 50` (not 100): field-expanded rows are size-capped and a
-     `limit:100` page can silently truncate. For each page assert the returned
-     item count equals `min(limit, total - offset)`; if short, refetch that offset
-     at a smaller limit before trusting the scan.
+   - Call `list_ad_groups(limit: 50, offset: 0, fields: ["name","params","exceptParams","enabled","archived","campaignId","creativeAssetGroupId"])`,
+     read `total`, then page following `next_offset` to the end per the rule above.
    - Collect every row into one `adGroups` array. Report the page count + total
-     scanned so exhaustiveness is visible.
+     scanned. If the collected count is below `total`, say so — do not present a
+     partial list as exhaustive.
 
 3. **Select the matched set locally** by running the helper's `selectTargeted`
    (via the CLI in step 6, or mentally: `params.zoneId ∋ zoneId`, minus
    exceptParams conflicts). You need the matched `campaignId`s and ad-group `id`s
    to scope the next calls.
 
-4. **Fetch rollup inputs for the matched set** (parallel batches, deduped):
-   - **Campaigns (exhaustive — same rigor as the ad-group scan):** call
-     `list_campaigns(limit: 100, offset: 0)`, read `total`, then fan out the
-     remaining offsets (100, 200, … up to `total`) in ONE parallel batch. Assert
-     each page's returned count equals `min(100, total - offset)`; refetch a short
-     page before trusting the map. Rows carry `enabled` + `archived`; build
+4. **Fetch rollup inputs for the matched set** (dedupe IDs; same pagination rule —
+   follow `next_offset`, never a fixed stride):
+   - **Campaigns:** page `list_campaigns(limit: 100, offset: 0)` following
+     `next_offset` to the end (rows carry `enabled` + `archived`); build
      `campaigns = { [id]: { enabled, archived } }`. A missing campaign would make a
      live ad group misreport "off at campaign", so this map must be complete.
-   - **Ads by campaign (exhaustive — page like the scans above):** dedupe the
-     matched `campaignId`s. For each unique campaign call
-     `list_ads(campaignId: X, limit: 100, offset: 0, fields: ["adGroupId","creativeId","enabled","archived"])`,
-     read `total`, then fan out the remaining offsets (100, 200, … up to `total`)
-     in one parallel batch; assert each page's returned count equals
-     `min(100, total - offset)` and refetch a short page before trusting it.
-     `list_*` tools default to `limit: 20`, so an UNPAGED call silently drops ads
-     and would misreport a live ad group as off. Bucket all rows into
-     `adsByGroup = { [adGroupId]: [ads] }`, keeping only matched ad-group ids.
+   - **Ads by campaign:** dedupe the matched `campaignId`s. For each unique
+     campaign, page
+     `list_ads(campaignId: X, limit: 100, offset: 0, fields: ["adGroupId","creativeId","enabled","archived"])`
+     following `next_offset` to the end. `list_*` tools default to `limit: 20`, so
+     an unpaged call silently drops ads and would misreport a live ad group as off.
+     Bucket all rows into `adsByGroup = { [adGroupId]: [ads] }`, keeping only
+     matched ad-group ids.
    - **Creatives:** dedupe the `creativeId`s of the enabled ads, `get_creative(id)`
-     each (parallel). Build `creatives = { [id]: { creativeAssetGroupId } }`; a
-     creative that does not resolve → `null`.
+     each (independent single gets — safe to batch in parallel). Build
+     `creatives = { [id]: { creativeAssetGroupId } }`; a creative that does not
+     resolve → `null`.
 
 5. **Write one JSON file** to the scratchpad with shape
    `{ zoneId, zoneCagId, adGroups, campaigns, adsByGroup, creatives }` where
@@ -83,8 +88,8 @@ creative attached) or **where it is off**." Exhaustive — no targeted ad group 
 - Never pass `networkId` to any tool — it is session-scoped upstream.
 - On `"Error: Not authenticated…"` surface it and ask the user to run `auth_login`;
   do not retry. On `"Error: Forbidden…"` check the active network and offer to switch.
-- If a scan page truncates even at a smaller limit, say so — do not present a
-  partial list as exhaustive.
+- If a scan cannot reach `total` rows (`next_offset` stops advancing while
+  `has_more` stays true), say so — never present a partial list as exhaustive.
 
 ## Out of scope (do not build here)
 "Free radicals" — ad groups targeted to no zone that still render via the zone's
