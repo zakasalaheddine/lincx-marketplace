@@ -15,6 +15,11 @@
       "name": "lincx-reports",
       "source": "./plugins/lincx-reports",
       "description": "Manager-friendly reports — campaign performance, revenue, creative anomalies — over the Lincx MCP"
+    },
+    {
+      "name": "lincx-inventory",
+      "source": "./plugins/lincx-inventory",
+      "description": "Inventory queries over Lincx config — zone targeting rollups, live/off filtering"
     }
   ]
 }

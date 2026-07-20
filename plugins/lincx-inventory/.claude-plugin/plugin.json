@@ -1,0 +1,8 @@
+{
+  "name": "lincx-inventory",
+  "description": "Inventory queries over Lincx config — starting with /zone-targeted: every ad group directly targeted to a zone and whether it's fully live.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Lincx"
+  }
+}
