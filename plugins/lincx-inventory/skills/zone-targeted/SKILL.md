@@ -16,12 +16,13 @@ creative attached) or **where it is off**." Exhaustive.
 ## Flow
 
 1. Call **`get_zone_targeting_inventory({ zoneId, mode })`**. It does the whole audit
-   server-side. Read the full result from **`structuredContent`**, NOT from the text
-   content (the text is a one-line header only): `{ zone, summary, groups[],
-   conflicting[], scan }`. Each `groups[]` row carries `campaign_on`, `adgroup_on`,
-   `has_live_viable_ad`, `fully_live`, `off_reason`, `archived` (plus `has_enabled_ad`
-   / `creative_resolves` diagnostics). **Do NOT scan ad groups yourself** — the tool
-   is exhaustive; the old client-side `list_ad_groups` scan is gone.
+   server-side. The result is the tool's **text content**: a one-line header, a
+   blank line, then compact JSON. **Parse the JSON** (everything after the first
+   blank line) to get `{ zone, summary, groups[], conflicting[], scan }`. Each
+   `groups[]` row carries `campaign_on`, `adgroup_on`, `has_live_viable_ad`,
+   `fully_live`, `off_reason`, `archived` (plus `has_enabled_ad` / `creative_resolves`
+   diagnostics). **Do NOT scan ad groups yourself** — the tool is exhaustive; the old
+   client-side `list_ad_groups` scan is gone.
 2. Render a markdown table from `groups`: one row per ad group with a ✅/❌ per level
    (campaign / ad group / live+viable ad) and the `off_reason` when not fully live.
    Head it with the zone name / CAG / template and the summary line
