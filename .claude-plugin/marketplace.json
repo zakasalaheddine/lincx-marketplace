@@ -20,6 +20,11 @@
       "name": "lincx-inventory",
       "source": "./plugins/lincx-inventory",
       "description": "Inventory queries over Lincx config — zone targeting rollups, live/off filtering"
+    },
+    {
+      "name": "lincx-analysis",
+      "source": "./plugins/lincx-analysis",
+      "description": "Zone tier analysis — the platform computes the tiers, Claude writes the narrative"
     }
   ]
 }

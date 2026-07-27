@@ -1,0 +1,8 @@
+{
+  "name": "lincx-analysis",
+  "description": "Zone tier analysis over the Lincx MCP — the platform computes the tiers deterministically, Claude writes the narrative.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Lincx"
+  }
+}
