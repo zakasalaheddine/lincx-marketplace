@@ -1,15 +1,16 @@
 # Campaign-performance dimension cheatsheet
 
-This is a hint, not a contract. Always verify with `get_dimension_set` before using.
+This is a hint, not a contract. Report names and dimension spellings differ per network — always run the dimension check in `_shared/dimension-discovery.md` against the live catalog before using a report.
 
-## Dimension sets the team has used for campaign perf
+## What a campaign-performance report needs
 
-| Name (likely)        | Dimensions present (likely)        | Metrics present (likely)                                |
-|----------------------|------------------------------------|---------------------------------------------------------|
-| `campaign_daily`     | `date`, `campaign_id`              | `spend`, `impressions`, `clicks`, `conversions`, `ctr`, `ecpm` |
-| `campaign_hourly`    | `hour`, `date`, `campaign_id`      | same as `campaign_daily`                                |
+| Question | Required dimensions |
+|---|---|
+| Daily performance of one or more campaigns (UTC days) | `campaign`, `date` |
+| Same, in a local timezone | `campaign`, `date`, `hour` |
+| Hour-of-day breakdown | `campaign`, `date`, `hour` |
 
-If the names differ on a given network, fall back to the dimension-discovery algorithm in `_shared/dimension-discovery.md`.
+Spellings above are typical; use whatever the report's `dimensions` array actually lists.
 
 ## Column order in the rendered table
 

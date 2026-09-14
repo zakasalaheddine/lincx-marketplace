@@ -33,3 +33,4 @@ If the active network is wrong or missing, surface `network_list` results and as
 - Pick a network for the user.
 - Combine data across networks (each MCP call is scoped to the active network).
 - Speculate on causes when the data does not show them.
+- Run `report_query` before the dimension check in `_shared/dimension-discovery.md` passes, or answer from a report that lacks a dimension the question needs.

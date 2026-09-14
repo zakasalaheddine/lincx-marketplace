@@ -14,10 +14,10 @@ Triggered by "top", "best", "worst", "bottom", "underperformers", "highest", "lo
 1. **Resolve the date range** per `_shared/date-range.md`.
 2. **Resolve the entity dimension** (zone / creative / site / template). If unclear, ask.
 3. **Resolve N** — default 10 winners + 10 losers. If the user asked "top 5", use 5. If they only asked for "top", confirm 10.
-4. **Pick a dimension set** per `_shared/dimension-discovery.md`. The dimension must cover the chosen entity.
+4. **Run the dimension check** in `_shared/dimension-discovery.md` — required: the chosen entity dimension. If the set lacks it, suggest reports that carry it and stop.
 5. **Run the report:**
 
-   `report_query({ dimensionSetId, startDate, endDate, resolution: "day", dimensions: ["<entity>_id"] })`
+   `report_query({ dimensionSetId, startDate, endDate, groupBy: ["<entity>"] })`
 
 6. **Sort client-side** by the primary metric the user implied (CTR / conversions / revenue / RPM). Take top N + bottom N.
 7. **Render** with column order:
@@ -30,8 +30,8 @@ Triggered by "dropped", "fell", "spiked", "this week vs last week", "today vs ye
 
 1. **Resolve current and prior ranges** per `_shared/date-range.md`. **Never assume "vs prior period of equal length"** — ask. Confirm both ranges back to the user before any tool call (e.g. "Current 2026-05-01 → 2026-05-07, prior 2026-04-24 → 2026-04-30 — both 7 days. Confirm?").
 2. **Resolve entity dimension** (zone / creative / site / template).
-3. **Pick a dimension set** per `_shared/dimension-discovery.md`.
-4. **Run two `report_query` calls** — one per range. Each scoped to the same dimension set + dimensions.
+3. **Run the dimension check** in `_shared/dimension-discovery.md` — required: the entity dimension (plus `date`/`hour` if comparing days or hours). One set must cover both ranges' needs.
+4. **Run two `report_query` calls** — one per range, same dimension set and `groupBy: ["<entity>"]`.
 5. **Join client-side on the entity key.** Compute:
    - `delta_pct = (current - prior) / prior * 100`
    - `delta_abs = current - prior`

@@ -14,13 +14,14 @@ You produce a campaign-performance report. The output contract is `_shared/outpu
    - Page through `list_campaigns({ limit: 100, offset })` and match by case-insensitive substring on `name`.
    - One match → use it. Multiple matches → list candidates with IDs and ask. No matches → surface the closest names from what you've seen and ask.
    - On large networks, if the first 2–3 pages don't yield a match, ask the user for the campaign ID or the owning advertiser to narrow the search. See `_shared/mcp-call-patterns.md`.
-3. **Pick a dimension set** per `_shared/dimension-discovery.md`. Prefer one whose dimensions include `campaign_id` and `date`.
-4. **Run the report:**
+3. **Run the dimension check** in `_shared/dimension-discovery.md` — required: the campaign dimension and `date` (plus `hour` if the user wants local-time days). If the set lacks any, suggest reports that carry them and stop; do not run the query.
+4. **Run the report** — one campaign:
 
-   `report_query({ dimensionSetId, startDate, endDate, resolution: "day", dimensions: ["date", "campaign_id"] })`
+   `report_query({ dimensionSetId, startDate, endDate, groupBy: ["date"], filter: { campaign: "<name>" } })`
 
-5. **Filter rows client-side** to the resolved campaign ID(s).
-6. **Render** per `_shared/output-template.md`. Fixed column order:
+   Several campaigns: `groupBy: ["date", "campaign"]` and keep the resolved ones. Use the dimension name exactly as the set lists it.
+
+5. **Render** per `_shared/output-template.md`. Fixed column order:
 
    `date | spend | impressions | clicks | conversions | ctr | ecpm`
 
