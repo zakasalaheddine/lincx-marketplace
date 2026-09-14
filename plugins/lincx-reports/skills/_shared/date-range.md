@@ -11,7 +11,7 @@ If the user did not give a range — even partially — stop and ask. Suggest tw
 Anything that could be interpreted two ways requires a question:
 
 - **Year missing** ("March 1–15") → ask which year, naming both candidates relative to today.
-- **Time-zone implicit** (cross-midnight ambiguity) → assume the network's reporting time zone if known; otherwise ask.
+- **Time-zone implicit** (cross-midnight ambiguity) → assume the network's reporting time zone if known; otherwise ask. A non-UTC zone makes `hour` a required dimension — see `_shared/dimension-discovery.md`.
 - **Inclusive vs exclusive end date** ("through May 7" vs "before May 7") → ask if not literal ISO.
 - **"This week" / "last week"** → ask: calendar week (Monday–Sunday in the network's locale) or rolling 7 days ending today/yesterday?
 

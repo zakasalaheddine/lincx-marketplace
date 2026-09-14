@@ -5,11 +5,11 @@
 **Expected tool sequence:**
 
 1. (no tool) — Claude asks for the comparison window: "this week = current 7 days? prior = previous 7 days? Confirm dates."
-2. `list_dimension_sets({ limit: 100, offset: 0 })`.
-3. `get_dimension_set({ id })` for the chosen `zone_*` dimension set.
-4. `report_query` for the **current** range, dimensions `["zone_id"]`.
-5. `report_query` for the **prior** range, dimensions `["zone_id"]`.
-6. Client-side join on `zone_id`; compute `delta_pct`, `delta_abs`; apply `|delta_pct| ≥ 25%` and a volume floor at 10% of median current revenue.
+2. `list_dimension_sets({ limit: 100, offset: 0, fields: ["dimensions"] })`.
+3. (no tool) — dimension check: required `zone`. Claude names the set it picked.
+4. `report_query` for the **current** range, `groupBy: ["zone"]`.
+5. `report_query` for the **prior** range, `groupBy: ["zone"]`.
+6. Client-side join on `zone`; compute `delta_pct`, `delta_abs`; apply `|delta_pct| ≥ 25%` and a volume floor at 10% of median current revenue.
 
 **Expected response shape:**
 

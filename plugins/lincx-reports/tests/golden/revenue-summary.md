@@ -5,9 +5,9 @@
 **Expected tool sequence:**
 
 1. (no tool) — Claude asks: "Calendar week (Mon–Sun) or rolling 7 days?"
-2. `list_dimension_sets({ limit: 100, offset: 0 })`.
-3. `get_dimension_set({ id })` for the best candidate (likely `advertiser_daily`).
-4. `report_query({ dimensionSetId, startDate, endDate, resolution: "day", dimensions: ["advertiser_id"] })`.
+2. `list_dimension_sets({ limit: 100, offset: 0, fields: ["dimensions"] })`.
+3. (no tool) — dimension check: required `advertiser`. Claude names the set it picked.
+4. `report_query({ dimensionSetId, startDate, endDate, groupBy: ["advertiser"] })`.
 
 **Expected response shape:**
 
@@ -19,5 +19,6 @@
 **Reviewer checklist:**
 
 - [ ] The skill asked between calendar vs rolling week before any tool call.
+- [ ] Dimension check ran before `report_query`.
 - [ ] Totals row weighted-averages `fill_rate` (not arithmetic mean).
 - [ ] No `auth_login` automatic invocation.

@@ -14,15 +14,14 @@ You produce a revenue / fill / RPM summary. Output contract is `_shared/output-t
 3. **(Optional) Resolve a specific entity** — if the user asked about a *specific* advertiser/site rather than all of them:
    - Page through the matching `list_advertisers` / `list_sites` (max `limit: 100`) and match by case-insensitive substring.
    - Multiple matches → ask. None → surface candidates seen.
-4. **Pick a dimension set** per `_shared/dimension-discovery.md`. Prefer one whose dimensions include the chosen entity (`advertiser_id` / `network_id` / `site_id`) and whose metrics include `revenue`, `impressions`, and `fill_rate`.
+4. **Run the dimension check** in `_shared/dimension-discovery.md` — required: the chosen entity dimension (`advertiser` / `site` / …, as the set names it), `date` for a time series, `hour` for local-time days. If the set lacks any, suggest reports that carry them and stop.
 5. **Run the report:**
 
-   `report_query({ dimensionSetId, startDate, endDate, resolution: "day", dimensions: ["<entity>_id"] })`
+   `report_query({ dimensionSetId, startDate, endDate, groupBy: ["<entity>"] })`
 
-   Or `dimensions: ["date", "<entity>_id"]` if the user wants a time series.
+   Or `groupBy: ["date", "<entity>"]` for a time series. A specific entity from step 3 → add `filter: { <entity>: "<name>" }`.
 
-6. **Aggregate client-side** if you queried with `date` as a second dimension.
-7. **Render** per `_shared/output-template.md`. Column order:
+6. **Render** per `_shared/output-template.md`. Column order:
 
    `<entity> | revenue | impressions | fill_rate | rpm`
 
@@ -37,5 +36,5 @@ Apply `_shared/mcp-call-patterns.md` for pagination semantics, error-string hand
 ## Edge cases
 
 - **No `fill_rate` in the dimension set** → drop the column; note in narrative.
-- **Single-entity ask returning many rows** (you forgot to filter) → narrow client-side and re-render.
+- **Single-entity ask returning many rows** (you forgot to filter) → re-run with `filter: { <entity>: "<name>" }`.
 - **Truncated response** → narrow and re-run.
